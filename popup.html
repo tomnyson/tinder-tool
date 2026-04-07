@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tinder Matches</title>
+  <style>
+    body {
+      width: 350px;
+      padding: 15px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+      margin: 0;
+    }
+
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    h1 {
+      font-size: 18px;
+      margin: 0 0 15px 0;
+      color: #333;
+      text-align: center;
+    }
+
+    .tabs {
+      display: flex;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #eee;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-size: 13px;
+      color: #666;
+      transition: all 0.3s;
+    }
+
+    .tab.active {
+      color: #FF6B6B;
+      border-bottom: 2px solid #FF6B6B;
+      margin-bottom: -2px;
+    }
+
+    .panel {
+      display: none;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    .input-group {
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+
+    input[type="number"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      box-sizing: border-box;
+      transition: border-color 0.3s;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #FF6B6B;
+    }
+
+    .delay-inputs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .delay-inputs input {
+      flex: 1;
+      text-align: center;
+    }
+
+    .delay-inputs span {
+      color: #666;
+      font-weight: bold;
+    }
+
+    input[type="checkbox"] {
+      width: auto;
+      margin-right: 8px;
+      cursor: pointer;
+    }
+
+    label:has(input[type="checkbox"]) {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+      color: white;
+      box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 107, 107, 0.5);
+    }
+
+    .btn-stop {
+      background: #666;
+      color: white;
+      display: none;
+    }
+
+    .status {
+      margin-top: 12px;
+      padding: 10px;
+      background: #f5f5f5;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 13px;
+      color: #333;
+    }
+
+    .status.running {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .status.stopped {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    .progress {
+      margin-top: 8px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #FF6B6B;
+      text-align: center;
+    }
+
+    .history-item {
+      padding: 10px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      background: #fafafa;
+    }
+
+    .history-item .name {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 4px;
+    }
+
+    .history-item .message {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+      word-break: break-word;
+    }
+
+    .history-item .time {
+      font-size: 11px;
+      color: #999;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>🔥 Tinder Auto Tool</h1>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="gamepad">🎮 Gamepad</button>
+      <button class="tab" data-tab="message">💬 Message</button>
+      <button class="tab" data-tab="history">📜 History</button>
+    </div>
+
+    <!-- Gamepad Panel -->
+    <div id="gamepad-panel" class="panel active">
+      <div class="input-group">
+        <label>Số lần click:</label>
+        <input type="number" id="clickCount" value="10" min="1" max="1000">
+      </div>
+
+      <div class="input-group">
+        <label>Delay (giây):</label>
+        <div class="delay-inputs">
+          <input type="number" id="minDelay" value="1" min="0.5" max="60" step="0.5">
+          <span>~</span>
+          <input type="number" id="maxDelay" value="3" min="0.5" max="60" step="0.5">
+        </div>
+      </div>
+
+      <button id="startBtn" class="btn btn-primary">▶️ Start Auto Click</button>
+      <button id="stopBtn" class="btn btn-stop">⏹️ Stop</button>
+    </div>
+
+    <!-- Message Panel -->
+    <div id="message-panel" class="panel">
+      <div class="input-group">
+        <label>
+          <input type="checkbox" id="randomQuote">
+          Gửi ngẫu nhiên câu châm ngôn
+        </label>
+      </div>
+
+      <div class="input-group" id="singleMessageGroup">
+        <label>Tin nhắn mặc định:</label>
+        <textarea id="messageText">Chúc ngày mới tốt lành! 🌸</textarea>
+      </div>
+
+      <div class="input-group" id="quotesGroup" style="display: none;">
+        <label>
+          <input type="checkbox" id="timeBasedQuotes">
+          🕐 Quotes theo buổi (sáng/trưa/tối)
+        </label>
+
+        <!-- Single quotes list (default) -->
+        <div id="singleQuotesGroup">
+          <label>Danh sách câu châm ngôn (mỗi dòng 1 câu):</label>
+          <textarea id="quotesList" style="min-height: 100px;">Chúc bạn ngày mới tốt lành! 🌸
+Hãy luôn mỉm cười nhé! 😊
+Cuộc sống thật đẹp khi có bạn ❤️
+Chúc một ngày tràn đầy năng lượng! ⚡
+Gửi bạn những điều tốt đẹp nhất 🌟</textarea>
+        </div>
+
+        <!-- Time-based quotes (hidden by default) -->
+        <div id="timeBasedQuotesGroup" style="display: none;">
+          <div style="margin-bottom: 10px; padding: 8px; background: #fff3e0; border-radius: 6px; font-size: 12px;">
+            🕐 Buổi hiện tại: <strong id="currentTimeSlot">--</strong>
+          </div>
+
+          <label>🌅 Buổi sáng (5h - 11h):</label>
+          <textarea id="morningQuotes" style="min-height: 60px;">Chào buổi sáng! Chúc bạn một ngày mới tràn đầy năng lượng! ☀️
+Sáng nay thức dậy, mình nghĩ đến bạn đầu tiên 🌸
+Mỗi buổi sáng là một khởi đầu mới. Chúc bạn nhiều niềm vui! 🌈</textarea>
+
+          <label style="margin-top: 10px;">🌞 Buổi trưa (11h - 17h):</label>
+          <textarea id="noonQuotes" style="min-height: 60px;">Buổi trưa vui vẻ! Nhớ ăn trưa đầy đủ nhé 🍜
+Giữa ngày bận rộn, gửi bạn chút năng lượng tích cực! 💪
+Chúc buổi trưa an lành, chiều thêm may mắn! ✨</textarea>
+
+          <label style="margin-top: 10px;">🌙 Buổi tối (17h - 5h):</label>
+          <textarea id="eveningQuotes" style="min-height: 60px;">Buổi tối an lành! Ngày hôm nay của bạn thế nào? 🌙
+Chúc bạn một đêm ngủ ngon và những giấc mơ đẹp 💤
+Cuối ngày rồi, thư giãn và nghỉ ngơi thật tốt nhé! 🌟</textarea>
+        </div>
+
+        <button id="fetchQuotesBtn" class="btn" style="background: #4CAF50; color: white; margin-top: 8px;">
+          🔄 Lấy quotes từ API
+        </button>
+        <div id="quotesStatus" style="font-size: 12px; color: #666; margin-top: 4px;"></div>
+      </div>
+
+      <div class="input-group">
+        <label>Số người gửi (0 = tất cả):</label>
+        <input type="number" id="messageCount" value="0" min="0" max="100">
+      </div>
+
+      <div class="input-group">
+        <label>Delay giữa mỗi người (giây):</label>
+        <div class="delay-inputs">
+          <input type="number" id="msgMinDelay" value="3" min="1" max="60" step="0.5">
+          <span>~</span>
+          <input type="number" id="msgMaxDelay" value="5" min="1" max="60" step="0.5">
+        </div>
+      </div>
+
+      <button id="startMsgBtn" class="btn btn-primary">📨 Gửi tin nhắn hàng loạt</button>
+      <button id="stopMsgBtn" class="btn btn-stop">⏹️ Stop</button>
+    </div>
+
+    <!-- History Panel -->
+    <div id="history-panel" class="panel">
+      <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+        <button id="refreshHistoryBtn" class="btn" style="flex: 1; background: #2196F3; color: white;">🔄
+          Refresh</button>
+        <button id="clearHistoryBtn" class="btn" style="flex: 1; background: #f44336; color: white;">🗑️ Xóa tất
+          cả</button>
+      </div>
+      <div id="historyCount" style="font-size: 12px; color: #666; margin-bottom: 8px;">Đang tải...</div>
+      <div id="historyList" style="max-height: 300px; overflow-y: auto;">
+        <!-- History items sẽ được render ở đây -->
+      </div>
+    </div>
+
+    <div id="status" class="status">Sẵn sàng</div>
+    <div id="progress" class="progress"></div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+
+</html>

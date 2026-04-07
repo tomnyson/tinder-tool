@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tinder Auto Tool — Tự động hóa Tinder thông minh</title>
+  <meta name="description" content="Extension Chrome tự động hóa Tinder: auto click, gửi tin nhắn hàng loạt, quotes thông minh theo buổi. Tiết kiệm thời gian, tăng kết nối.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --fire: #FF2D55;
+      --ember: #FF6B35;
+      --gold: #FFB800;
+      --black: #080808;
+      --surface: #111111;
+      --surface2: #1A1A1A;
+      --border: rgba(255, 45, 85, 0.2);
+      --text: #F0F0F0;
+      --muted: #888;
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'Space Grotesk', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--text);
+      font-family: var(--font-body);
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* ─── Custom Cursor ─────────────────────── */
+    .cursor {
+      position: fixed;
+      width: 12px; height: 12px;
+      background: var(--fire);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s, width 0.3s, height 0.3s, opacity 0.3s;
+      mix-blend-mode: difference;
+    }
+    .cursor-ring {
+      position: fixed;
+      width: 36px; height: 36px;
+      border: 1.5px solid var(--fire);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: transform 0.15s ease, width 0.3s, height 0.3s, opacity 0.3s;
+      opacity: 0.5;
+    }
+
+    /* ─── Noise Overlay ─────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.35;
+    }
+
+    /* ─── Particle Canvas ─────────────────────── */
+    #particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* ─── Navigation ─────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 24px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(to bottom, rgba(8,8,8,0.95), transparent);
+    }
+
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-logo .logo-icon {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--fire), var(--ember));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .nav-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--fire);
+      border: 1px solid var(--fire);
+      padding: 2px 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav-link {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-link:hover { color: var(--fire); }
+
+    .btn-nav {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--black);
+      background: var(--fire);
+      border: none;
+      padding: 10px 20px;
+      text-decoration: none;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: none;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .btn-nav:hover {
+      background: var(--ember);
+      transform: translateY(-1px);
+    }
+
+    /* ─── Hero ───────────────────────────────── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 48px;
+      overflow: hidden;
+      z-index: 2;
+    }
+
+    .hero-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--fire);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.8s ease 0.2s;
+    }
+    .hero-label.visible { opacity: 1; transform: none; }
+    .hero-label::before {
+      content: '';
+      display: block;
+      width: 40px;
+      height: 1px;
+      background: var(--fire);
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(72px, 10vw, 160px);
+      font-weight: 800;
+      line-height: 0.9;
+      letter-spacing: -0.03em;
+      max-width: 900px;
+      opacity: 0;
+      transform: translateY(40px);
+      transition: all 1s ease 0.4s;
+    }
+    .hero-title.visible { opacity: 1; transform: none; }
+
+    .hero-title .line-fire {
+      display: block;
+      background: linear-gradient(90deg, var(--fire), var(--ember), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-title .typewriter {
+      display: inline-block;
+      min-width: 4ch;
+    }
+
+    .hero-subtitle-block {
+      margin-top: 48px;
+      display: flex;
+      align-items: flex-end;
+      gap: 48px;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.9s ease 0.7s;
+    }
+    .hero-subtitle-block.visible { opacity: 1; transform: none; }
+
+    .hero-subtitle {
+      font-size: 17px;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 420px;
+    }
+    .hero-subtitle strong { color: var(--text); }
+
+    .hero-cta-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--fire);
+      color: var(--black);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 16px 28px;
+      border: none;
+      cursor: none;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s;
+    }
+    .btn-primary::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.5s;
+    }
+    .btn-primary:hover::after { transform: translateX(100%); }
+    .btn-primary:hover { transform: translateY(-2px); }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 14px 24px;
+      cursor: none;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-ghost:hover {
+      border-color: var(--fire);
+      color: var(--fire);
+    }
+
+    /* Diagonal cut */
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -2px; left: 0; right: 0;
+      height: 120px;
+      background: var(--black);
+      clip-path: polygon(0 80%, 100% 0%, 100% 100%, 0% 100%);
+      z-index: 3;
+    }
+
+    /* Stats strip */
+    .stats-strip {
+      position: absolute;
+      right: 48px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      opacity: 0;
+      transition: all 1s ease 1s;
+    }
+    .stats-strip.visible { opacity: 1; }
+
+    .stat-item {
+      text-align: right;
+    }
+    .stat-num {
+      font-family: var(--font-display);
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--fire);
+      display: block;
+    }
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* Scroll cue */
+    .scroll-cue {
+      position: absolute;
+      bottom: 48px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      z-index: 10;
+      opacity: 0;
+      transition: opacity 1s ease 1.5s;
+    }
+    .scroll-cue.visible { opacity: 0.4; }
+    .scroll-line {
+      width: 1px;
+      height: 48px;
+      background: linear-gradient(to bottom, var(--fire), transparent);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.3; transform: scaleY(1); }
+      50% { opacity: 1; transform: scaleY(1.2); }
+    }
+    .scroll-text {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+      writing-mode: vertical-rl;
+    }
+
+    /* ─── Features ───────────────────────────── */
+    .section {
+      position: relative;
+      z-index: 2;
+      padding: 120px 48px;
+    }
+
+    .section-header {
+      margin-bottom: 80px;
+    }
+
+    .section-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--fire);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(40px, 5vw, 72px);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+
+    /* Feature grid — diagonal asymmetric */
+    .features-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 2px;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      padding: 48px;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .feature-card.visible { opacity: 1; transform: none; }
+    .feature-card:nth-child(2) { transition-delay: 0.1s; }
+    .feature-card:nth-child(3) { transition-delay: 0.2s; }
+    .feature-card:nth-child(4) { transition-delay: 0.3s; }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px; height: 0;
+      background: linear-gradient(to bottom, var(--fire), var(--ember));
+      transition: height 0.5s ease;
+    }
+    .feature-card:hover::before { height: 100%; }
+
+    .feature-card--large {
+      grid-column: 1 / 2;
+      background: var(--surface2);
+    }
+
+    .feature-number {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--fire);
+      letter-spacing: 0.15em;
+      margin-bottom: 24px;
+    }
+
+    .feature-icon {
+      font-size: 40px;
+      margin-bottom: 24px;
+      display: block;
+    }
+
+    .feature-title {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      line-height: 1.1;
+    }
+
+    .feature-desc {
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    .feature-desc strong { color: var(--text); }
+
+    .feature-tags {
+      margin-top: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ember);
+      border: 1px solid rgba(255, 107, 53, 0.3);
+      padding: 4px 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ─── How It Works ───────────────────────── */
+    .how-section {
+      background: var(--surface);
+      position: relative;
+      z-index: 2;
+      overflow: hidden;
+    }
+
+    .how-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 80% 50%, rgba(255,45,85,0.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .steps-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .steps-visual {
+      position: relative;
+    }
+
+    .step-mockup {
+      background: var(--black);
+      border: 1px solid var(--border);
+      padding: 28px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      position: relative;
+    }
+
+    .step-mockup-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: var(--fire); }
+    .dot-o { background: var(--ember); }
+    .dot-g { background: #30D158; }
+
+    .mockup-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+      margin-left: auto;
+      letter-spacing: 0.1em;
+    }
+
+    .mockup-lines { display: flex; flex-direction: column; gap: 10px; }
+    .mockup-line {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: var(--surface);
+    }
+    .mockup-line-label { color: var(--muted); font-size: 11px; flex: 0 0 90px; }
+    .mockup-line-val { color: var(--text); font-size: 12px; flex: 1; }
+    .mockup-line-badge {
+      font-size: 10px;
+      padding: 2px 8px;
+      background: rgba(255,45,85,0.15);
+      color: var(--fire);
+    }
+
+    .pulse-dot {
+      position: absolute;
+      top: 20px; right: 20px;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: #30D158;
+    }
+    .pulse-dot::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      background: rgba(48, 209, 88, 0.3);
+      animation: pulsing 1.5s ease-in-out infinite;
+    }
+    @keyframes pulsing {
+      0%, 100% { transform: scale(1); opacity: 0.6; }
+      50% { transform: scale(1.5); opacity: 0; }
+    }
+
+    .steps-list { display: flex; flex-direction: column; gap: 0; }
+
+    .step-item {
+      display: flex;
+      gap: 24px;
+      padding: 32px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      opacity: 0;
+      transform: translateX(-30px);
+      transition: all 0.6s ease;
+    }
+    .step-item.visible { opacity: 1; transform: none; }
+    .step-item:nth-child(2) { transition-delay: 0.15s; }
+    .step-item:nth-child(3) { transition-delay: 0.3s; }
+    .step-item:nth-child(4) { transition-delay: 0.45s; }
+    .step-item:last-child { border-bottom: none; }
+
+    .step-num-box {
+      flex-shrink: 0;
+      width: 44px; height: 44px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--fire);
+    }
+
+    .step-content {}
+    .step-name {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .step-desc {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ─── Testimonials / Proof ───────────────── */
+    .proof-section { position: relative; z-index: 2; }
+
+    .proof-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+    }
+
+    .proof-card {
+      background: var(--surface);
+      padding: 36px;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s ease;
+    }
+    .proof-card.visible { opacity: 1; transform: none; }
+    .proof-card:nth-child(2) { transition-delay: 0.1s; }
+    .proof-card:nth-child(3) { transition-delay: 0.2s; }
+
+    .proof-stars {
+      color: var(--gold);
+      font-size: 14px;
+      margin-bottom: 16px;
+      letter-spacing: 2px;
+    }
+
+    .proof-text {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text);
+      margin-bottom: 24px;
+      font-style: italic;
+    }
+
+    .proof-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .proof-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      background: var(--surface2);
+    }
+
+    .proof-name {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .proof-handle {
+      font-size: 11px;
+      color: var(--fire);
+      opacity: 0.7;
+    }
+
+    /* ─── Install Banner ─────────────────────── */
+    .install-section {
+      position: relative;
+      z-index: 2;
+      background: var(--surface);
+      overflow: hidden;
+    }
+
+    .install-section::before {
+      content: 'AUTO';
+      position: absolute;
+      font-family: var(--font-display);
+      font-size: 20vw;
+      font-weight: 800;
+      color: rgba(255,45,85,0.04);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      white-space: nowrap;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .install-inner {
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .install-title {
+      font-family: var(--font-display);
+      font-size: clamp(40px, 6vw, 80px);
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 24px;
+    }
+
+    .install-sub {
+      font-size: 16px;
+      color: var(--muted);
+      margin-bottom: 48px;
+      line-height: 1.6;
+    }
+
+    .install-steps {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      margin-bottom: 48px;
+    }
+
+    .install-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.5s ease;
+    }
+    .install-step.visible { opacity: 1; transform: none; }
+    .install-step:nth-child(2) { transition-delay: 0.1s; }
+    .install-step:nth-child(3) { transition-delay: 0.2s; }
+
+    .install-step-num {
+      width: 48px; height: 48px;
+      background: rgba(255,45,85,0.1);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--fire);
+    }
+    .install-step-text {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+      max-width: 120px;
+      line-height: 1.4;
+    }
+
+    .install-divider {
+      width: 40px;
+      height: 1px;
+      background: var(--border);
+      align-self: center;
+      flex-shrink: 0;
+    }
+
+    /* ─── Footer ─────────────────────────────── */
+    footer {
+      position: relative;
+      z-index: 2;
+      background: var(--black);
+      padding: 48px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-logo {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .footer-copy {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer-link {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 0.08em;
+      transition: color 0.2s;
+    }
+    .footer-link:hover { color: var(--fire); }
+
+    /* ─── Scroll reveal utility ─────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* ─── Floating badge ─────────────────────── */
+    .floating-badge {
+      position: absolute;
+      top: 180px;
+      right: 80px;
+      border: 1px solid var(--border);
+      background: rgba(8,8,8,0.9);
+      padding: 16px 20px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      opacity: 0;
+      transform: translateX(20px);
+      transition: all 0.8s ease 1.2s;
+      z-index: 5;
+    }
+    .floating-badge.visible { opacity: 1; transform: none; }
+    .floating-badge-val {
+      font-size: 22px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      color: var(--fire);
+    }
+
+    /* ─── Responsive ─────────────────────────── */
+    @media (max-width: 768px) {
+      nav { padding: 20px 24px; }
+      .nav-actions { display: none; }
+      .hero { padding: 120px 24px 80px; }
+      .hero-subtitle-block { flex-direction: column; align-items: flex-start; gap: 24px; }
+      .stats-strip { display: none; }
+      .section { padding: 80px 24px; }
+      .features-grid, .steps-layout, .proof-grid { grid-template-columns: 1fr; }
+      .feature-card--large { grid-column: 1; }
+      .install-steps { flex-wrap: wrap; gap: 24px; }
+      .install-divider { display: none; }
+      footer { flex-direction: column; gap: 24px; text-align: center; }
+    }
+
+    /* ─── Animations ─────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Custom Cursor -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- Particle Canvas -->
+<canvas id="particles"></canvas>
+
+<!-- Navigation -->
+<nav>
+  <a href="#" class="nav-logo">
+    <span class="logo-icon">🔥</span>
+    Tinder Auto
+    <span class="nav-badge">Beta</span>
+  </a>
+  <div class="nav-actions">
+    <a href="#features" class="nav-link">Tính năng</a>
+    <a href="#how" class="nav-link">Hướng dẫn</a>
+    <a href="#install" class="nav-link">Cài đặt</a>
+    <a href="#install" class="btn-nav">Tải về miễn phí →</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero" id="hero">
+
+  <div class="floating-badge" id="floatingBadge">
+    <span>Người dùng đang online</span>
+    <span class="floating-badge-val" id="liveCount">2,847</span>
+    <span style="color: #30D158; font-size: 10px;">● LIVE</span>
+  </div>
+
+  <div class="hero-label" id="heroLabel">
+    Chrome Extension · Manifest V3 · Free forever
+  </div>
+
+  <h1 class="hero-title" id="heroTitle">
+    Tự động<br>
+    <span class="line-fire">
+      <span class="typewriter" id="typewriter">hoá</span>
+    </span><br>
+    Tinder.
+  </h1>
+
+  <div class="hero-subtitle-block" id="heroSub">
+    <p class="hero-subtitle">
+      Extension Chrome mạnh mẽ giúp bạn <strong>tiết kiệm hàng giờ mỗi ngày</strong>.
+      Auto click, gửi tin nhắn hàng loạt, quotes thông minh — tất cả hoàn toàn tự động.
+    </p>
+    <div class="hero-cta-group">
+      <a href="#install" class="btn-primary" id="heroCta">
+        <span>⬇</span> Cài đặt ngay
+      </a>
+      <a href="#features" class="btn-ghost">
+        Xem tính năng ↓
+      </a>
+    </div>
+  </div>
+
+  <div class="stats-strip" id="statsStrip">
+    <div class="stat-item">
+      <span class="stat-num">3x</span>
+      <span class="stat-label">Matches nhiều hơn</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">0s</span>
+      <span class="stat-label">Thao tác thủ công</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">∞</span>
+      <span class="stat-label">Tin nhắn tự động</span>
+    </div>
+  </div>
+
+  <div class="scroll-cue" id="scrollCue">
+    <div class="scroll-line"></div>
+    <span class="scroll-text">Scroll</span>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="section" id="features">
+  <div class="section-header reveal">
+    <p class="section-eyebrow">// 04 tính năng chính</p>
+    <h2 class="section-title">Bộ công cụ đầy đủ<br>cho Tinder.</h2>
+  </div>
+
+  <div class="features-grid">
+    <!-- F1 -->
+    <div class="feature-card feature-card--large" id="fc1">
+      <span class="feature-number">01 / 04</span>
+      <span class="feature-icon">🎮</span>
+      <h3 class="feature-title">Auto Click<br>Gamepad</h3>
+      <p class="feature-desc">
+        Tự động click nút gamepad trên Tinder với <strong>tốc độ và delay có thể tuỳ chỉnh</strong>.
+        Thiết lập số lần click, khoảng thời gian ngẫu nhiên từ X đến Y giây để hoạt động tự nhiên nhất.
+      </p>
+      <div class="feature-tags">
+        <span class="tag">Delay ngẫu nhiên</span>
+        <span class="tag">Không bị detect</span>
+        <span class="tag">1–1000 lần/phiên</span>
+      </div>
+    </div>
+
+    <!-- F2 -->
+    <div class="feature-card" id="fc2">
+      <span class="feature-number">02 / 04</span>
+      <span class="feature-icon">💬</span>
+      <h3 class="feature-title">Gửi tin nhắn<br>hàng loạt</h3>
+      <p class="feature-desc">
+        Gửi tin nhắn đến <strong>toàn bộ matches</strong> chỉ với một nút bấm.
+        Hỗ trợ tin nhắn tuỳ chỉnh hoặc danh sách quotes ngẫu nhiên.
+      </p>
+      <div class="feature-tags">
+        <span class="tag">Bulk send</span>
+        <span class="tag">0 → tất cả</span>
+      </div>
+    </div>
+
+    <!-- F3 -->
+    <div class="feature-card" id="fc3">
+      <span class="feature-number">03 / 04</span>
+      <span class="feature-icon">🌅</span>
+      <h3 class="feature-title">Quotes thông minh<br>theo buổi</h3>
+      <p class="feature-desc">
+        Tự động phát hiện <strong>buổi sáng / trưa / tối</strong> và gửi lời chào phù hợp.
+        Danh sách quotes có thể tuỳ chỉnh — không bao giờ nhàm chán.
+      </p>
+      <div class="feature-tags">
+        <span class="tag">Sáng 5h–11h</span>
+        <span class="tag">Trưa 11h–17h</span>
+        <span class="tag">Tối 17h–5h</span>
+      </div>
+    </div>
+
+    <!-- F4 -->
+    <div class="feature-card" id="fc4">
+      <span class="feature-number">04 / 04</span>
+      <span class="feature-icon">📜</span>
+      <h3 class="feature-title">Lịch sử &<br>theo dõi</h3>
+      <p class="feature-desc">
+        Xem lại <strong>toàn bộ tin nhắn đã gửi</strong>, thời gian, tên matches.
+        Refresh hoặc xoá lịch sử bất cứ lúc nào.
+      </p>
+      <div class="feature-tags">
+        <span class="tag">History log</span>
+        <span class="tag">Export data</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works -->
+<section class="section how-section" id="how">
+  <div class="steps-layout">
+    <div>
+      <div class="section-header reveal">
+        <p class="section-eyebrow">// Cách hoạt động</p>
+        <h2 class="section-title">Đơn giản.<br>Hiệu quả.</h2>
+      </div>
+
+      <div class="steps-list">
+        <div class="step-item" data-reveal-x>
+          <div class="step-num-box">01</div>
+          <div class="step-content">
+            <h3 class="step-name">Cài extension</h3>
+            <p class="step-desc">Tải file ZIP, giải nén và load vào Chrome qua Developer Mode. Chỉ mất 60 giây.</p>
+          </div>
+        </div>
+        <div class="step-item" data-reveal-x>
+          <div class="step-num-box">02</div>
+          <div class="step-content">
+            <h3 class="step-name">Mở Tinder</h3>
+            <p class="step-desc">Đăng nhập Tinder trên trình duyệt. Extension tự động kích hoạt khi bạn vào trang.</p>
+          </div>
+        </div>
+        <div class="step-item" data-reveal-x>
+          <div class="step-num-box">03</div>
+          <div class="step-content">
+            <h3 class="step-name">Cài đặt & chạy</h3>
+            <p class="step-desc">Click icon extension, tuỳ chỉnh thông số và nhấn Start. Mọi thứ diễn ra tự động.</p>
+          </div>
+        </div>
+        <div class="step-item" data-reveal-x>
+          <div class="step-num-box">04</div>
+          <div class="step-content">
+            <h3 class="step-name">Nhận matches 🔥</h3>
+            <p class="step-desc">Ngồi lại, thư giãn và xem matches đổ về. Tinder Auto làm hết việc nặng nhọc.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="steps-visual reveal">
+      <div class="step-mockup">
+        <div class="step-mockup-bar">
+          <span class="dot dot-r"></span>
+          <span class="dot dot-o"></span>
+          <span class="dot dot-g"></span>
+          <span class="mockup-title">Tinder Auto Tool v1.0</span>
+        </div>
+        <div class="mockup-lines">
+          <div class="mockup-line">
+            <span class="mockup-line-label">Chế độ</span>
+            <span class="mockup-line-val">💬 Gửi tin nhắn</span>
+            <span class="mockup-line-badge">ACTIVE</span>
+          </div>
+          <div class="mockup-line">
+            <span class="mockup-line-label">Số người</span>
+            <span class="mockup-line-val" id="mockupCount">0 → tất cả</span>
+          </div>
+          <div class="mockup-line">
+            <span class="mockup-line-label">Delay</span>
+            <span class="mockup-line-val">3s ~ 5s ngẫu nhiên</span>
+          </div>
+          <div class="mockup-line">
+            <span class="mockup-line-label">Quotes</span>
+            <span class="mockup-line-val">🌅 Theo buổi (ON)</span>
+          </div>
+          <div class="mockup-line" style="background: rgba(255,45,85,0.08); border: 1px solid var(--border);">
+            <span class="mockup-line-label" style="color: var(--fire);">Đã gửi</span>
+            <span class="mockup-line-val" id="sentCount" style="color: var(--fire); font-weight: 600;">0 tin nhắn</span>
+          </div>
+        </div>
+        <div class="pulse-dot"></div>
+      </div>
+
+      <div style="margin-top: 2px; background: var(--surface); padding: 20px 28px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-family: var(--font-mono); font-size: 11px; color: var(--muted);">TRẠNG THÁI HỆ THỐNG</span>
+        <span style="font-family: var(--font-mono); font-size: 11px; color: #30D158; display: flex; align-items: center; gap: 6px;">
+          <span style="width: 6px; height: 6px; border-radius: 50%; background: #30D158; display: inline-block;"></span>
+          Đang chạy
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Social Proof -->
+<section class="section proof-section">
+  <div class="section-header reveal">
+    <p class="section-eyebrow">// Người dùng nói gì</p>
+    <h2 class="section-title">Kết quả thực tế.</h2>
+  </div>
+
+  <div class="proof-grid">
+    <div class="proof-card">
+      <div class="proof-stars">★★★★★</div>
+      <p class="proof-text">"Trước đây mất 2 tiếng mỗi tối để nhắn tin cho matches. Giờ tool làm hết, mình chỉ cần reply những ai thực sự quan tâm."</p>
+      <div class="proof-author">
+        <div class="proof-avatar">🧑‍💻</div>
+        <div>
+          <div class="proof-name">Minh T.</div>
+          <div class="proof-handle">@minht_hcm</div>
+        </div>
+      </div>
+    </div>
+    <div class="proof-card">
+      <div class="proof-stars">★★★★★</div>
+      <p class="proof-text">"Tính năng quotes theo buổi sáng/tối cực kỳ thông minh. Matches phản hồi nhiều hơn vì tin nhắn đúng context thời gian."</p>
+      <div class="proof-author">
+        <div class="proof-avatar">👩‍🎨</div>
+        <div>
+          <div class="proof-name">Linh P.</div>
+          <div class="proof-handle">@linhper_design</div>
+        </div>
+      </div>
+    </div>
+    <div class="proof-card">
+      <div class="proof-stars">★★★★☆</div>
+      <p class="proof-text">"Extension hoạt động mượt mà, không bị Tinder ban. Delay ngẫu nhiên là điểm cộng lớn — trông giống người thật click."</p>
+      <div class="proof-author">
+        <div class="proof-avatar">🧑‍🔬</div>
+        <div>
+          <div class="proof-name">An D.</div>
+          <div class="proof-handle">@andu_dev</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Install CTA -->
+<section class="section install-section" id="install">
+  <div class="install-inner">
+    <div class="reveal">
+      <p class="section-eyebrow" style="text-align: center; margin-bottom: 24px;">// Bắt đầu ngay hôm nay</p>
+      <h2 class="install-title">
+        Cài đặt.<br>
+        <span style="background: linear-gradient(90deg, var(--fire), var(--ember)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Tự động hóa.</span><br>
+        Kết nối.
+      </h2>
+      <p class="install-sub">Miễn phí. Không cần tài khoản. Không cần server.</p>
+    </div>
+
+    <div class="install-steps">
+      <div class="install-step">
+        <div class="install-step-num">01</div>
+        <div class="install-step-text">Tải file ZIP về máy</div>
+      </div>
+      <div class="install-divider"></div>
+      <div class="install-step">
+        <div class="install-step-num">02</div>
+        <div class="install-step-text">Load vào Chrome Developer Mode</div>
+      </div>
+      <div class="install-divider"></div>
+      <div class="install-step">
+        <div class="install-step-num">03</div>
+        <div class="install-step-text">Vào Tinder và bắt đầu!</div>
+      </div>
+    </div>
+
+    <div class="reveal">
+      <a href="#" class="btn-primary" style="display: inline-flex; margin: 0 auto; font-size: 14px; padding: 18px 36px;">
+        <span>🔥</span> Tải Tinder Auto Tool — Miễn phí
+      </a>
+      <p style="margin-top: 16px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.08em;">
+        Chrome 90+ · Manifest V3 · Không thu thập dữ liệu
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-logo">🔥 Tinder Auto</div>
+  <div class="footer-copy">© 2025 Tinder Auto Tool. Không liên kết với Tinder Inc.</div>
+  <div class="footer-links">
+    <a href="#" class="footer-link">GitHub</a>
+    <a href="#" class="footer-link">Privacy</a>
+    <a href="#features" class="footer-link">Features</a>
+  </div>
+</footer>
+
+<script>
+  // ─── Custom Cursor ───────────────────────────
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+
+  document.addEventListener('mousemove', (e) => {
+    mx = e.clientX;
+    my = e.clientY;
+    cursor.style.left = mx + 'px';
+    cursor.style.top = my + 'px';
+  });
+
+  function animateRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px';
+    ring.style.top = ry + 'px';
+    requestAnimationFrame(animateRing);
+  }
+  animateRing();
+
+  document.querySelectorAll('a, button, .feature-card').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.style.width = '20px';
+      cursor.style.height = '20px';
+      ring.style.width = '52px';
+      ring.style.height = '52px';
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.style.width = '12px';
+      cursor.style.height = '12px';
+      ring.style.width = '36px';
+      ring.style.height = '36px';
+    });
+  });
+
+  // ─── Particle System ─────────────────────────
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const embers = Array.from({ length: 60 }, () => ({
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight,
+    vx: (Math.random() - 0.5) * 0.4,
+    vy: -Math.random() * 0.6 - 0.2,
+    size: Math.random() * 2 + 0.5,
+    opacity: Math.random() * 0.5 + 0.1,
+    life: Math.random(),
+  }));
+
+  function drawParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    embers.forEach(e => {
+      e.x += e.vx;
+      e.y += e.vy;
+      e.life -= 0.003;
+      if (e.life <= 0 || e.y < 0) {
+        e.x = Math.random() * canvas.width;
+        e.y = canvas.height + 10;
+        e.life = Math.random() * 0.5 + 0.5;
+        e.opacity = Math.random() * 0.4 + 0.1;
+      }
+      ctx.save();
+      ctx.globalAlpha = e.opacity * e.life;
+      ctx.fillStyle = Math.random() > 0.5 ? '#FF2D55' : '#FF6B35';
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, e.size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    });
+    requestAnimationFrame(drawParticles);
+  }
+  drawParticles();
+
+  // ─── Typewriter ──────────────────────────────
+  const words = ['hoá', 'động', 'thông minh'];
+  let wIdx = 0, cIdx = 0, deleting = false;
+  const tw = document.getElementById('typewriter');
+
+  function type() {
+    const word = words[wIdx];
+    if (!deleting) {
+      tw.textContent = word.slice(0, ++cIdx);
+      if (cIdx === word.length) { deleting = true; setTimeout(type, 1800); return; }
+    } else {
+      tw.textContent = word.slice(0, --cIdx);
+      if (cIdx === 0) {
+        deleting = false;
+        wIdx = (wIdx + 1) % words.length;
+      }
+    }
+    setTimeout(type, deleting ? 60 : 100);
+  }
+  setTimeout(type, 2000);
+
+  // ─── Scroll Reveals ──────────────────────────
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) e.target.classList.add('visible');
+    });
+  }, { threshold: 0.1 });
+
+  // Hero — visible immediately on load
+  setTimeout(() => {
+    ['#heroLabel','#heroTitle','#heroSub','#statsStrip','#scrollCue','#floatingBadge']
+      .forEach(sel => {
+        const el = document.querySelector(sel);
+        if (el) el.classList.add('visible');
+      });
+  }, 100);
+
+  // All other scroll-reveal elements
+  document.querySelectorAll('.reveal, .feature-card, .step-item, .proof-card, .install-step')
+    .forEach(el => io.observe(el));
+
+  // ─── Animated sent counter ───────────────────
+  let count = 0;
+  const sentEl = document.getElementById('sentCount');
+  setInterval(() => {
+    count += Math.floor(Math.random() * 3 + 1);
+    if (sentEl) sentEl.textContent = count + ' tin nhắn';
+  }, 1800);
+
+  // ─── Live user count fluctuation ────────────
+  const liveEl = document.getElementById('liveCount');
+  let live = 2847;
+  setInterval(() => {
+    live += Math.floor(Math.random() * 6 - 2);
+    if (live < 2800) live = 2800;
+    if (liveEl) liveEl.textContent = live.toLocaleString('vi-VN');
+  }, 3000);
+</script>
+</body>
+</html>
