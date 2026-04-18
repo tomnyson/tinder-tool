@@ -682,11 +682,131 @@
       opacity: 0.5;
     }
 
-    /* ---- DIVIDER ---- */
-    .divider {
-      height: 1px;
-      background: var(--border);
-      margin: 10px 0;
+    /* ---- SAVED MESSAGES ---- */
+    .saved-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+
+    .saved-summary {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+    }
+
+    .saved-summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .saved-summary:hover {
+      color: var(--text-primary);
+    }
+
+    .saved-summary svg {
+      flex-shrink: 0;
+      stroke: currentColor;
+      fill: none;
+    }
+
+    details[open] .saved-summary {
+      color: var(--accent);
+    }
+
+    details[open] .saved-summary svg {
+      stroke: var(--accent);
+    }
+
+    .saved-list {
+      padding: 0 10px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .saved-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      padding: 8px 10px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .saved-item:hover {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .saved-item-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .saved-item-name {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .saved-item-preview {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.3;
+    }
+
+    .saved-item-delete {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 4px;
+      flex-shrink: 0;
+      transition: all var(--transition);
+      padding: 0;
+    }
+
+    .saved-item-delete:hover {
+      color: var(--red);
+      background: var(--red-dim);
+    }
+
+    .saved-empty {
+      text-align: center;
+      padding: 8px 0;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .saved-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 10px 10px;
     }
 
     /* ---- TIME SLOTS (Message tab) ---- */
@@ -722,6 +842,48 @@
       -webkit-appearance: none;
     }
 
+    /* ---- LANGUAGE SWITCH ---- */
+    .lang-switch {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2px 8px;
+      flex-shrink: 0;
+    }
+
+    .lang-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 12px;
+      transition: all var(--transition);
+      letter-spacing: 0.5px;
+    }
+
+    .lang-btn:hover {
+      color: var(--text-secondary);
+    }
+
+    .lang-btn.active {
+      color: var(--text-primary);
+      background: var(--accent-dim);
+    }
+
+    .lang-divider {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 600;
+      user-select: none;
+    }
+
     /* ---- CUSTOM MODEL INPUT ---- */
     #customModelInput {
       margin-top: 6px;
@@ -737,8 +899,13 @@
       <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
     </div>
     <div class="header-text">
-      <h1>Tinder Auto Tool</h1>
-      <p>Tự động gửi tin nhắn hàng loạt</p>
+      <h1 data-i18n="app.title">Tinder Auto Tool</h1>
+      <p data-i18n="app.subtitle">Tự động gửi tin nhắn hàng loạt</p>
+    </div>
+    <div class="lang-switch" id="langSwitch" title="Switch language">
+      <button class="lang-btn" id="langVi" data-lang="vi">VI</button>
+      <span class="lang-divider">/</span>
+      <button class="lang-btn" id="langEn" data-lang="en">EN</button>
     </div>
   </div>
 
@@ -746,19 +913,19 @@
   <div class="tabs">
     <button class="tab active" data-tab="gamepad">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-      Swipe
+      <span data-i18n="tab.swipe">Swipe</span>
     </button>
     <button class="tab" data-tab="message">
       <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-      Message
+      <span data-i18n="tab.message">Message</span>
     </button>
     <button class="tab" data-tab="history">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
-      History
+      <span data-i18n="tab.history">History</span>
     </button>
     <button class="tab" data-tab="ai">
       <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 18a8 8 0 110-16 8 8 0 010 16zm-1-5h2v2h-2zm1.61-9.96a2.5 2.5 0 01.89 2.46h-1.78a1.5 1.5 0 00-1.78 1.33V15h2v1h-3.5a.5.5 0 010-1H11v-1.54a2.5 2.5 0 012.61-2.5z"/></svg>
-      AI
+      <span data-i18n="tab.ai">AI</span>
     </button>
   </div>
 
@@ -766,35 +933,35 @@
   <div id="gamepad-panel" class="panel active">
 
     <div class="section">
-      <div class="section-title">Swipe Configuration</div>
+      <div class="section-title" data-i18n="swipe.title">Cấu hình Swipe</div>
 
       <div class="field">
-        <label class="field-label">Số lần swipe</label>
+        <label class="field-label" data-i18n="swipe.count">Số lần swipe</label>
         <input type="number" id="clickCount" value="10" min="1" max="1000">
       </div>
 
       <div class="field">
-        <label class="field-label">Thời gian chờ (giây)</label>
+        <label class="field-label" data-i18n="swipe.delay">Thời gian chờ (giây)</label>
         <div class="delay-row">
-          <input type="number" id="minDelay" value="1" min="0.5" max="60" step="0.5" placeholder="Từ">
+          <input type="number" id="minDelay" value="1" min="0.5" max="60" step="0.5" placeholder="Từ" data-i18n-placeholder="swipe.delay.from">
           <span class="delay-sep">~</span>
-          <input type="number" id="maxDelay" value="3" min="0.5" max="60" step="0.5" placeholder="Đến">
+          <input type="number" id="maxDelay" value="3" min="0.5" max="60" step="0.5" placeholder="Đến" data-i18n-placeholder="swipe.delay.to">
         </div>
       </div>
     </div>
 
     <div class="status-bar">
       <div class="status-dot" id="gamepadDot"></div>
-      <div class="status-text" id="status">San sang</div>
+      <div class="status-text" id="status" data-i18n="swipe.ready">Sẵn sàng</div>
     </div>
 
     <button id="startBtn" class="btn btn-primary">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-      Bat dau swipe
+      <span data-i18n="swipe.start">Bắt đầu swipe</span>
     </button>
     <button id="stopBtn" class="btn btn-danger" style="display:none;">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
-      Dung lai
+      <span data-i18n="swipe.stop">Dừng lại</span>
     </button>
   </div>
 
@@ -803,57 +970,57 @@
 
     <!-- Send Mode -->
     <div class="section">
-      <div class="section-title">Che do gui tin nhan</div>
+      <div class="section-title">Chế độ gửi tin nhắn</div>
 
       <div class="field">
         <label class="checkbox-label">
           <input type="checkbox" id="randomQuote">
-          Gui cau cham ngon ngau nhien
+          <span data-i18n="msg.randomQuotes">Gửi câu châm ngôn ngẫu nhiên</span>
         </label>
       </div>
 
       <!-- Fixed message textarea -->
       <div class="field" id="singleMessageGroup">
-        <label class="field-label">Noi dung tin nhan</label>
-        <textarea id="messageText" placeholder="Nhap tin nhan cua ban..."></textarea>
+        <label class="field-label" data-i18n="msg.content">Nội dung tin nhắn</label>
+        <textarea id="messageText" placeholder="Nhập tin nhắn của bạn..." data-i18n-placeholder="msg.messagePlaceholder"></textarea>
       </div>
 
       <!-- AI generation button in message tab -->
       <div class="field" id="aiGenerateGroup">
         <button id="generateAiMsgBtn" class="btn btn-ai">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 18a8 8 0 110-16 8 8 0 010 16zm-1-5h2v2h-2zm1.61-9.96a2.5 2.5 0 01.89 2.46h-1.78a1.5 1.5 0 00-1.78 1.33V15h2v1h-3.5a.5.5 0 010-1H11v-1.54a2.5 2.5 0 012.61-2.5z"/></svg>
-          Tao tin nhan bang AI
+          <span data-i18n="msg.aiGenerate">Tạo tin nhắn bằng AI</span>
         </button>
         <div id="generateAiStatus"></div>
 
         <div id="generateAiPreview" class="ai-preview-box">
           <div class="ai-preview-header">
-            <span>Xem truoc AI</span>
+            <span data-i18n="msg.aiPreview">Xem trước AI</span>
           </div>
           <div class="ai-preview-body" id="generateAiPreviewText"></div>
         </div>
 
         <div class="btn-row" id="aiPreviewActions" style="display:none; margin-top:6px;">
-          <button id="useAiMsgBtn" class="btn btn-sm btn-secondary">Dung tin nay</button>
-          <button id="regenerateAiMsgBtn" class="btn btn-sm btn-ghost">Tao lai</button>
+          <button id="useAiMsgBtn" class="btn btn-sm btn-secondary" data-i18n="msg.useThis">Dùng tin này</button>
+          <button id="regenerateAiMsgBtn" class="btn btn-sm btn-ghost" data-i18n="msg.regenerate">Tạo lại</button>
         </div>
       </div>
     </div>
 
     <!-- Quotes section (hidden by default) -->
     <div class="section" id="quotesGroup" style="display:none;">
-      <div class="section-title">Danh sach cau cham ngon</div>
+      <div class="section-title" data-i18n="msg.quotesSection">Danh sách câu châm ngôn</div>
 
       <div class="field">
         <label class="checkbox-label">
           <input type="checkbox" id="timeBasedQuotes">
-          Theo buoi trong ngay
+          <span data-i18n="msg.timeBased">Theo buổi trong ngày</span>
         </label>
       </div>
 
       <div id="singleQuotesGroup">
         <div class="field">
-          <textarea id="quotesList" style="min-height:80px;" placeholder="Mot cau moi dong...">Chuc ban ngay moi tot lanh!
+          <textarea id="quotesList" style="min-height:80px;" placeholder="Một câu mỗi dòng..." data-i18n-placeholder="msg.quotesPlaceholder">Chuc ban ngay moi tot lanh!
 Hay luon mem cuoi nhe!
 Cuoc song that dep khi co ban</textarea>
         </div>
@@ -862,24 +1029,24 @@ Cuoc song that dep khi co ban</textarea>
       <div id="timeBasedQuotesGroup" style="display:none;">
         <div class="time-indicator" id="currentTimeSlotWrap">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
-          Hien tai:
+          <span data-i18n="msg.timeNow">Hiện tại:</span>
           <strong id="currentTimeSlot">--</strong>
         </div>
 
         <div class="field">
-          <label class="field-label">Sang (5h - 11h)</label>
+          <label class="field-label" data-i18n="msg.morning">Sáng (5h - 11h)</label>
           <textarea id="morningQuotes" style="min-height:50px;">Chao buoi sang! Chuc ban mot ngay moi tràn đầy năng lượng!
 Sang nay thuc day, mình nghĩ đến bạn đầu tiên</textarea>
         </div>
 
         <div class="field">
-          <label class="field-label">Trua (11h - 17h)</label>
+          <label class="field-label" data-i18n="msg.noon">Trưa (11h - 17h)</label>
           <textarea id="noonQuotes" style="min-height:50px;">Buoi trua vui ve! Nho an trua đầy đủ nhe
 Giữa ngày bận rộn, gửi bạn chút năng lượng tích cực!</textarea>
         </div>
 
         <div class="field">
-          <label class="field-label">Toi (17h - 5h)</label>
+          <label class="field-label" data-i18n="msg.evening">Tối (17h - 5h)</label>
           <textarea id="eveningQuotes" style="min-height:50px;">Buoi toi an lành! Ngày hom nay cua ban the nao?
 Chuc ban mot đêm ngu ngon va những giấc mo đẹp</textarea>
         </div>
@@ -887,22 +1054,40 @@ Chuc ban mot đêm ngu ngon va những giấc mo đẹp</textarea>
 
       <button id="fetchQuotesBtn" class="btn btn-sm btn-ghost">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
-        Lay quotes tu API
+        <span data-i18n="msg.fetchQuotes">Lấy quotes từ API</span>
       </button>
       <div id="quotesStatus"></div>
     </div>
 
+    <!-- Saved Messages -->
+    <details class="saved-section" id="savedMessagesSection">
+      <summary class="saved-summary">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+        <span data-i18n="msg.savedSection">Tin nhắn đã lưu</span>
+      </summary>
+
+      <div class="saved-list" id="savedMessagesList"></div>
+
+      <div class="saved-actions">
+        <input type="text" id="savedMsgNameInput" data-i18n-placeholder="msg.savedNamePlaceholder" placeholder="Tên mẫu tin nhắn..." style="flex:1; font-size:11px;">
+        <button id="saveMsgPresetBtn" class="btn btn-sm btn-primary" style="width:auto; padding:6px 10px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          <span data-i18n="msg.save">Lưu</span>
+        </button>
+      </div>
+    </details>
+
     <!-- Sending config -->
     <div class="section">
-      <div class="section-title">Cau hinh gui</div>
+      <div class="section-title" data-i18n="msg.sendConfig">Cấu hình gửi</div>
 
       <div class="field">
-        <label class="field-label">So nguoi gui (0 = tat ca)</label>
+        <label class="field-label" data-i18n="msg.recipientCount">Số người gửi (0 = tất cả)</label>
         <input type="number" id="messageCount" value="0" min="0" max="100">
       </div>
 
       <div class="field">
-        <label class="field-label">Delay giữa mỗi nguoi (giây)</label>
+        <label class="field-label" data-i18n="msg.delayBetween">Delay giữa mỗi người (giây)</label>
         <div class="delay-row">
           <input type="number" id="msgMinDelay" value="3" min="1" max="60" step="0.5">
           <span class="delay-sep">~</span>
@@ -913,11 +1098,11 @@ Chuc ban mot đêm ngu ngon va những giấc mo đẹp</textarea>
 
     <button id="startMsgBtn" class="btn btn-primary">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-      Gui tin nhan hang loat
+      <span data-i18n="msg.sendBulk">Gửi tin nhắn hàng loạt</span>
     </button>
     <button id="stopMsgBtn" class="btn btn-danger" style="display:none;">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
-      Dung lai
+      Dừng lại
     </button>
   </div>
 
@@ -927,19 +1112,19 @@ Chuc ban mot đêm ngu ngon va những giấc mo đẹp</textarea>
     <div class="btn-row" style="margin-bottom:10px;">
       <button id="refreshHistoryBtn" class="btn btn-sm btn-ghost">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
-        Refresh
+        <span data-i18n="history.refresh">Refresh</span>
       </button>
       <button id="clearHistoryBtn" class="btn btn-sm btn-danger">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-        Xoa tat ca
+        <span data-i18n="history.clearAll">Xóa tất cả</span>
       </button>
     </div>
 
-    <div class="history-count" id="historyCount">Dang tai...</div>
+    <div class="history-count" id="historyCount" data-i18n="history.loading">Đang tải...</div>
     <div class="history-list" id="historyList">
       <div class="history-empty">
         <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-        <div>Chua co tin nhan nao</div>
+        <div data-i18n="history.empty">Chưa có tin nhắn nào</div>
       </div>
     </div>
   </div>
@@ -953,7 +1138,7 @@ Chuc ban mot đêm ngu ngon va những giấc mo đẹp</textarea>
 
       <div class="api-badge not-configured" id="apiKeyStatus">
         <div class="dot"></div>
-        <span>Chua cau hinh API Key</span>
+        <span data-i18n="ai.apiNotConfigured">Chưa cấu hình API Key</span>
       </div>
 
       <div class="field">
@@ -961,8 +1146,8 @@ Chuc ban mot đêm ngu ngon va những giấc mo đẹp</textarea>
       </div>
 
       <div class="btn-row">
-        <button id="saveApiKeyBtn" class="btn btn-sm btn-primary">Luu</button>
-        <button id="testApiKeyBtn" class="btn btn-sm btn-ghost">Test</button>
+        <button id="saveApiKeyBtn" class="btn btn-sm btn-primary" data-i18n="ai.save">Lưu</button>
+        <button id="testApiKeyBtn" class="btn btn-sm btn-ghost" data-i18n="ai.test">Test</button>
       </div>
 
       <div id="testResult" class="alert"></div>
@@ -970,30 +1155,30 @@ Chuc ban mot đêm ngu ngon va những giấc mo đẹp</textarea>
 
     <!-- Message Mode -->
     <div class="section">
-      <div class="section-title">Che do tin nhan</div>
+      <div class="section-title" data-i18n="ai.modeSection">Chế độ tin nhắn</div>
 
       <div class="mode-group">
         <label class="mode-card selected" data-mode="fixed">
           <input type="radio" name="aiMode" value="fixed" checked>
           <div class="mode-card-body">
-            <div class="mode-card-title">Tin nhan co dinh</div>
-            <div class="mode-card-desc">Gui cung mot tin nhan cho tat ca</div>
+            <div class="mode-card-title" data-i18n="ai.modeFixed">Tin nhắn cố định</div>
+            <div class="mode-card-desc" data-i18n="ai.modeFixedDesc">Gửi cùng một tin nhắn cho tất cả</div>
           </div>
         </label>
 
         <label class="mode-card" data-mode="random">
           <input type="radio" name="aiMode" value="random">
           <div class="mode-card-body">
-            <div class="mode-card-title">Ngau nhien</div>
-            <div class="mode-card-desc">Gui cau cham ngon ngau nhien tu danh sach</div>
+            <div class="mode-card-title" data-i18n="ai.modeRandom">Ngẫu nhiên</div>
+            <div class="mode-card-desc" data-i18n="ai.modeRandomDesc">Gửi câu châm ngôn ngẫu nhiên từ danh sách</div>
           </div>
         </label>
 
         <label class="mode-card" data-mode="ai">
           <input type="radio" name="aiMode" value="ai">
           <div class="mode-card-body">
-            <div class="mode-card-title">AI OpenRouter</div>
-            <div class="mode-card-desc">Dung AI de tao tin nhan ca nhan hoa</div>
+            <div class="mode-card-title" data-i18n="ai.modeAi">AI OpenRouter</div>
+            <div class="mode-card-desc" data-i18n="ai.modeAiDesc">Dùng AI để tạo tin nhắn cá nhân hoá</div>
           </div>
         </label>
       </div>
@@ -1001,7 +1186,7 @@ Chuc ban mot đêm ngu ngon va những giấc mo đẹp</textarea>
 
     <!-- Model -->
     <div class="section">
-      <div class="section-title">Model AI</div>
+      <div class="section-title" data-i18n="ai.modelSection">Model AI</div>
 
       <div class="field">
         <select id="modelSelect">
@@ -1018,33 +1203,33 @@ Chuc ban mot đêm ngu ngon va những giấc mo đẹp</textarea>
 
     <!-- Prompts -->
     <div class="section">
-      <div class="section-title">Prompt cau hinh</div>
+      <div class="section-title" data-i18n="ai.promptSection">Prompt cấu hình</div>
 
       <div class="field">
         <label class="field-label">System Prompt</label>
-        <textarea id="systemPromptInput" style="min-height:46px; font-size:11px; font-family:monospace;" placeholder="Ban la...">Ban la mot nguoi viet tin nhan tan gai (gui tin nhan dau tien cho phu nu tren Tinder). Viet tin nhan than thien, tu nhien, hai huoc nhe, phu hop voi van hoa Viet Nam. Khong qua 100 ky tu. Khong dung emoji qua nhieu.</textarea>
+        <textarea id="systemPromptInput" style="min-height:46px; font-size:11px; font-family:monospace;" data-i18n-placeholder="ai.systemPromptPlaceholder" placeholder="Bạn là...">Ban la mot nguoi viet tin nhan tan gai (gui tin nhan dau tien cho phu nu tren Tinder). Viet tin nhan than thien, tu nhien, hai huoc nhe, phu hop voi van hoa Viet Nam. Khong qua 100 ky tu. Khong dung emoji qua nhieu.</textarea>
       </div>
 
       <div class="field">
-        <label class="field-label">User Prompt (dung {{profile}} de chèn thông tin)</label>
-        <textarea id="userPromptInput" style="min-height:46px; font-size:11px; font-family:monospace;" placeholder="Viet mot tin nhan...">Viet mot tin nhan mo dau cho nguoi nay: {{profile}}. Viet bang tieng Viet, tu nhien nhu đang chat that.</textarea>
+        <label class="field-label" data-i18n="ai.userPrompt">User Prompt (dùng {profile} để chèn thông tin)</label>
+        <textarea id="userPromptInput" style="min-height:46px; font-size:11px; font-family:monospace;" data-i18n-placeholder="ai.userPromptPlaceholder" placeholder="Viết một tin nhắn...">Viet mot tin nhan mo dau cho nguoi nay: {{profile}}. Viet bang tieng Viet, tu nhien nhu dang chat that.</textarea>
       </div>
 
       <div class="btn-row">
         <button id="testAiGenerateBtn" class="btn btn-sm btn-ai">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 18a8 8 0 110-16 8 8 0 010 16zm-1-5h2v2h-2zm1.61-9.96a2.5 2.5 0 01.89 2.46h-1.78a1.5 1.5 0 00-1.78 1.33V15h2v1h-3.5a.5.5 0 010-1H11v-1.54a2.5 2.5 0 012.61-2.5z"/></svg>
-          Thu tao tin nhan
+          <span data-i18n="ai.testGenerate">Thử tạo tin nhắn</span>
         </button>
       </div>
 
       <div id="aiGenerating" style="display:none; align-items:center; gap:8px; padding:9px 11px; background:var(--accent-dim); border-radius:8px; margin-top:8px; font-size:12px; color:var(--accent);">
         <div class="spinner"></div>
-        AI đang tao tin nhan...
+        <span data-i18n="ai.generating">AI đang tạo tin nhắn...</span>
       </div>
 
       <div id="aiPreview" class="ai-preview-box" style="margin-top:8px;">
         <div class="ai-preview-header">
-          <span>Xem truoc tin nhan AI</span>
+          <span data-i18n="ai.preview">Xem trước tin nhắn AI</span>
         </div>
         <div class="ai-preview-body" id="aiPreviewText"></div>
       </div>
@@ -1055,6 +1240,7 @@ Chuc ban mot đêm ngu ngon va những giấc mo đẹp</textarea>
   <div id="progress" style="font-size:20px; font-weight:800; color:var(--accent); text-align:center; margin-top:10px; font-variant-numeric:tabular-nums;"></div>
   <div id="status" class="status-text" style="display:none;"></div>
 
+  <script src="lib/i18n.js"></script>
   <script src="lib/openrouter.js"></script>
   <script src="popup.js"></script>
 </body>

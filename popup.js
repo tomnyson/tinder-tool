@@ -157,7 +157,113 @@ randomQuoteCheckbox.addEventListener('change', () => {
   }
 });
 
-// Fetch quotes from API
+// ========== SAVED MESSAGES ==========
+const savedMessagesListEl = document.getElementById('savedMessagesList');
+const savedMsgNameInput = document.getElementById('savedMsgNameInput');
+const saveMsgPresetBtn = document.getElementById('saveMsgPresetBtn');
+const savedMessagesSection = document.getElementById('savedMessagesSection');
+
+const MAX_SAVED = 20;
+
+async function loadSavedMessages() {
+  const result = await chrome.storage.local.get(['savedMessages']);
+  return result.savedMessages || [];
+}
+
+async function persistSavedMessages(messages) {
+  await chrome.storage.local.set({ savedMessages: messages });
+}
+
+async function renderSavedMessages() {
+  const messages = await loadSavedMessages();
+  if (messages.length === 0) {
+    savedMessagesListEl.innerHTML = '<div class="saved-empty">Chua co mau tin nao</div>';
+    return;
+  }
+
+  savedMessagesListEl.innerHTML = messages.map((msg, idx) => `
+    <div class="saved-item" data-idx="${idx}">
+      <div class="saved-item-body">
+        <div class="saved-item-name">${escapeHtml(msg.name || 'Khong co tieu de')}</div>
+        <div class="saved-item-preview">${escapeHtml(msg.message || '')}</div>
+      </div>
+      <button class="saved-item-delete" data-idx="${idx}" title="Xoa">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  `).join('');
+
+  // Click to load
+  savedMessagesListEl.querySelectorAll('.saved-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      if (e.target.closest('.saved-item-delete')) return;
+      const idx = parseInt(item.dataset.idx);
+      loadSavedPreset(idx);
+    });
+  });
+
+  // Delete buttons
+  savedMessagesListEl.querySelectorAll('.saved-item-delete').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const idx = parseInt(btn.dataset.idx);
+      deleteSavedPreset(idx);
+    });
+  });
+}
+
+async function loadSavedPreset(idx) {
+  const messages = await loadSavedMessages();
+  const preset = messages[idx];
+  if (!preset) return;
+
+  messageTextInput.value = preset.message || '';
+  randomQuoteCheckbox.checked = false;
+  quotesGroup.style.display = 'none';
+  singleMessageGroup.style.display = 'block';
+
+  if (savedMessagesSection) savedMessagesSection.open = false;
+  savedMsgNameInput.value = preset.name || '';
+  messageTextInput.focus();
+}
+
+async function deleteSavedPreset(idx) {
+  const messages = await loadSavedMessages();
+  messages.splice(idx, 1);
+  await persistSavedMessages(messages);
+  await renderSavedMessages();
+}
+
+if (saveMsgPresetBtn) {
+  saveMsgPresetBtn.addEventListener('click', async () => {
+    const name = savedMsgNameInput.value.trim();
+    const message = messageTextInput.value.trim();
+
+    if (!message) {
+      savedMsgNameInput.style.borderColor = 'var(--red)';
+      setTimeout(() => { savedMsgNameInput.style.borderColor = ''; }, 1500);
+      return;
+    }
+
+    const messages = await loadSavedMessages();
+    if (messages.length >= MAX_SAVED) {
+      messages.shift();
+    }
+    messages.push({ name: name || '', message });
+    await persistSavedMessages(messages);
+
+    savedMsgNameInput.value = '';
+    await renderSavedMessages();
+  });
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+
 const fetchQuotesBtn = document.getElementById('fetchQuotesBtn');
 const quotesStatusEl = document.getElementById('quotesStatus');
 
@@ -328,7 +434,7 @@ startMsgBtn.addEventListener('click', async () => {
       ]);
 
       if (!result.openRouterApiKey) {
-        statusEl.textContent = 'Vui long cau hinh API Key trong tab AI!';
+        statusEl.textContent = i18n.t('msg.noAiKey');
         statusEl.style.display = 'block';
         statusEl.style.color = 'var(--red)';
         return;
@@ -463,7 +569,7 @@ const regenerateAiMsgBtn = document.getElementById('regenerateAiMsgBtn');
 let lastGeneratedMessage = '';
 
 async function generateSingleAIMessage() {
-  statusEl.textContent = 'Dang tao tin nhan AI...';
+  statusEl.textContent = i18n.t('msg.generating');
   statusEl.style.display = 'block';
   statusEl.style.color = 'var(--accent)';
 
@@ -475,14 +581,14 @@ async function generateSingleAIMessage() {
   ]);
 
   if (!aiConfig.openRouterApiKey) {
-    showGenStatus('Chua cau hinh API Key! Vao tab AI de cau hinh.', 'error');
-    statusEl.textContent = 'Chua cau hinh API Key!';
+    showGenStatus(i18n.t('msg.aiNoApiKey'), 'error');
+    statusEl.textContent = i18n.t('msg.aiNoApiKey');
     statusEl.style.color = 'var(--red)';
     return null;
   }
 
   generateAiMsgBtn.disabled = true;
-  generateAiMsgBtn.textContent = 'Dang tao...';
+  generateAiMsgBtn.innerHTML = '<svg class="spinner" style="width:14px;height:14px;border:2px solid rgba(232,96,76,0.2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;flex-shrink:0;" viewBox="0 0 24 24"></svg> <span>' + i18n.t('msg.generating') + '</span>';
 
   try {
     const response = await sendMessageToTab({
@@ -494,15 +600,15 @@ async function generateSingleAIMessage() {
     });
 
     generateAiMsgBtn.disabled = false;
-    generateAiMsgBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 18a8 8 0 110-16 8 8 0 010 16zm-1-5h2v2h-2zm1.61-9.96a2.5 2.5 0 01.89 2.46h-1.78a1.5 1.5 0 00-1.78 1.33V15h2v1h-3.5a.5.5 0 010-1H11v-1.54a2.5 2.5 0 012.61-2.5z"/></svg> Tao tin nhan bang AI';
+    generateAiMsgBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 18a8 8 0 110-16 8 8 0 010 16zm-1-5h2v2h-2zm1.61-9.96a2.5 2.5 0 01.89 2.46h-1.78a1.5 1.5 0 00-1.78 1.33V15h2v1h-3.5a.5.5 0 010-1H11v-1.54a2.5 2.5 0 012.61-2.5z"/></svg> <span>' + i18n.t('msg.aiGenerate') + '</span>';
 
     if (response?.success && response.message) {
       lastGeneratedMessage = response.message;
       generateAiPreviewText.textContent = response.message;
       generateAiPreview.classList.add('show');
       document.getElementById('aiPreviewActions').style.display = 'flex';
-      showGenStatus('Da tao tin nhan!', 'success');
-      statusEl.textContent = 'Da tao tin nhan AI!';
+      showGenStatus(i18n.t('msg.aiCreated'), 'success');
+      statusEl.textContent = i18n.t('msg.aiCreated');
       statusEl.style.color = 'var(--green)';
       return response.message;
     } else {
@@ -514,7 +620,7 @@ async function generateSingleAIMessage() {
     }
   } catch (e) {
     generateAiMsgBtn.disabled = false;
-    generateAiMsgBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 18a8 8 0 110-16 8 8 0 010 16zm-1-5h2v2h-2zm1.61-9.96a2.5 2.5 0 01.89 2.46h-1.78a1.5 1.5 0 00-1.78 1.33V15h2v1h-3.5a.5.5 0 010-1H11v-1.54a2.5 2.5 0 012.61-2.5z"/></svg> Tao tin nhan bang AI';
+    generateAiMsgBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 18a8 8 0 110-16 8 8 0 010 16zm-1-5h2v2h-2zm1.61-9.96a2.5 2.5 0 01.89 2.46h-1.78a1.5 1.5 0 00-1.78 1.33V15h2v1h-3.5a.5.5 0 010-1H11v-1.54a2.5 2.5 0 012.61-2.5z"/></svg> <span>' + i18n.t('msg.aiGenerate') + '</span>';
     showGenStatus('Loi: ' + e.message, 'error');
     statusEl.textContent = 'Loi: ' + e.message;
     statusEl.style.color = 'var(--red)';
@@ -593,10 +699,10 @@ async function loadHistory() {
     const result = await chrome.storage.local.get(['messageHistory']);
     const history = result.messageHistory || [];
 
-    historyCountEl.textContent = `📊 Tổng: ${history.length} tin nhắn`;
+    historyCountEl.textContent = `Tong: ${history.length} tin nhan`;
 
     if (history.length === 0) {
-      historyListEl.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">Chưa có tin nhắn nào được gửi</div>';
+      historyListEl.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">' + i18n.t('history.empty') + '</div>';
       return;
     }
 
@@ -609,7 +715,7 @@ async function loadHistory() {
     `).join('');
   } catch (e) {
     console.error('Lỗi load history:', e);
-    historyListEl.innerHTML = '<div style="color: red;">Lỗi tải lịch sử</div>';
+      historyListEl.innerHTML = '<div style="color: red; text-align:center; padding:20px;">' + i18n.t('history.error') + '</div>';
   }
 }
 
@@ -700,12 +806,13 @@ async function loadAIConfig() {
 }
 
 function updateApiKeyStatus(configured) {
+  const lang = i18n.lang;
   if (configured) {
     apiKeyStatusEl.className = 'api-badge configured';
-    apiKeyStatusEl.innerHTML = '<div class="dot"></div><span>API Key da cau hinh</span>';
+    apiKeyStatusEl.innerHTML = '<div class="dot"></div><span>' + i18n.t('ai.apiConfigured') + '</span>';
   } else {
     apiKeyStatusEl.className = 'api-badge not-configured';
-    apiKeyStatusEl.innerHTML = '<div class="dot"></div><span>Chua cau hinh API Key</span>';
+    apiKeyStatusEl.innerHTML = '<div class="dot"></div><span>' + i18n.t('ai.apiNotConfigured') + '</span>';
   }
 }
 
@@ -745,12 +852,12 @@ modeOptions.forEach(opt => {
 saveApiKeyBtn.addEventListener('click', async () => {
   const apiKey = apiKeyInput.value.trim();
   if (!apiKey) {
-    showTestResult('Vui long nhap API Key!', 'error');
+    showTestResult(i18n.t('ai.enterApiKey'), 'error');
     return;
   }
 
   saveApiKeyBtn.disabled = true;
-  saveApiKeyBtn.textContent = 'Dang luu...';
+  saveApiKeyBtn.innerHTML = '<span>Dang luu...</span>';
 
   try {
     const modelValue = modelSelect && modelSelect.value === 'custom'
@@ -764,7 +871,7 @@ saveApiKeyBtn.addEventListener('click', async () => {
       aiModel: modelValue
     });
 
-    showTestResult('Da luu API Key!', 'success');
+    showTestResult(i18n.t('ai.apiKeySaved'), 'success');
     updateApiKeyStatus(true);
     setTimeout(clearTestResult, 2000);
   } catch (e) {
@@ -772,28 +879,28 @@ saveApiKeyBtn.addEventListener('click', async () => {
   }
 
   saveApiKeyBtn.disabled = false;
-  saveApiKeyBtn.textContent = 'Luu';
+  saveApiKeyBtn.innerHTML = '<span>' + i18n.t('ai.save') + '</span>';
 });
 
 testApiKeyBtn.addEventListener('click', async () => {
   const apiKey = apiKeyInput.value.trim();
   if (!apiKey) {
-    showTestResult('Vui long nhap API Key!', 'error');
+    showTestResult(i18n.t('ai.enterApiKey'), 'error');
     return;
   }
 
   testApiKeyBtn.disabled = true;
-  testApiKeyBtn.textContent = 'Dang kiem tra...';
-  showTestResult('Dang kiem tra...', 'info');
+  testApiKeyBtn.textContent = i18n.t('ai.checking');
+  showTestResult(i18n.t('ai.checking'), 'info');
 
   try {
     const openrouter = OpenRouter;
     const result = await openrouter.validateKey(apiKey);
     if (result.valid) {
-      showTestResult('API Key hop le!', 'success');
+      showTestResult(i18n.t('ai.apiKeyValid'), 'success');
       updateApiKeyStatus(true);
     } else {
-      showTestResult(result.error || 'API Key khong hop le', 'error');
+      showTestResult(result.error || i18n.t('ai.apiKeyInvalid'), 'error');
       updateApiKeyStatus(false);
     }
   } catch (e) {
@@ -801,14 +908,14 @@ testApiKeyBtn.addEventListener('click', async () => {
   }
 
   testApiKeyBtn.disabled = false;
-  testApiKeyBtn.textContent = 'Test';
+  testApiKeyBtn.textContent = i18n.t('ai.test');
   setTimeout(clearTestResult, 5000);
 });
 
 testAiGenerateBtn.addEventListener('click', async () => {
   const apiKey = apiKeyInput.value.trim();
   if (!apiKey) {
-    showTestResult('Vui long luu API Key truoc!', 'error');
+    showTestResult(i18n.t('ai.saveFirst'), 'error');
     return;
   }
 
@@ -833,7 +940,7 @@ testAiGenerateBtn.addEventListener('click', async () => {
       aiPreviewTextEl.textContent = result.message;
       aiPreviewEl.classList.add('show');
     } else {
-      showTestResult('Loi AI: ' + result.error, 'error');
+      showTestResult(i18n.t('ai.aiError') + ' ' + result.error, 'error');
     }
   } catch (e) {
     aiGeneratingEl.style.display = 'none';
@@ -843,3 +950,54 @@ testAiGenerateBtn.addEventListener('click', async () => {
 });
 
 loadAIConfig();
+renderSavedMessages();
+
+// ========== I18N (Language Switch) ==========
+const langViBtn = document.getElementById('langVi');
+const langEnBtn = document.getElementById('langEn');
+
+async function applyLanguage(lang) {
+  i18n.lang = lang;
+  await chrome.storage.local.set({ appLang: lang });
+
+  // Update textContent for all [data-i18n]
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    el.textContent = i18n.t(key);
+  });
+
+  // Update placeholders for all [data-i18n-placeholder]
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    el.placeholder = i18n.t(key);
+  });
+
+  // Update button active states
+  langViBtn.classList.toggle('active', lang === 'vi');
+  langEnBtn.classList.toggle('active', lang === 'en');
+
+  // Update AI prompts with language defaults
+  if (systemPromptInput) {
+    const p = i18n.prompts[lang];
+    systemPromptInput.value = p.system;
+    userPromptInput.value = p.user;
+  }
+
+  // Update saved messages empty state if visible
+  const savedEmpty = document.querySelector('.saved-empty');
+  if (savedEmpty) savedEmpty.textContent = i18n.t('msg.savedEmpty');
+}
+
+function switchToLang(lang) {
+  applyLanguage(lang);
+}
+
+if (langViBtn) langViBtn.addEventListener('click', () => switchToLang('vi'));
+if (langEnBtn) langEnBtn.addEventListener('click', () => switchToLang('en'));
+
+// Init language — load from storage or default to Vietnamese
+(async () => {
+  const result = await chrome.storage.local.get(['appLang']);
+  const savedLang = result.appLang || 'vi';
+  applyLanguage(savedLang);
+})();
