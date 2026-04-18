@@ -1,57 +1,149 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tinder Matches</title>
+  <title>Tinder Auto Tool</title>
   <style>
-    body {
-      width: 350px;
-      padding: 15px;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+    *, *::before, *::after {
+      box-sizing: border-box;
       margin: 0;
+      padding: 0;
     }
 
-    .container {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    :root {
+      --bg-base: #181412;
+      --bg-card: #221e1a;
+      --bg-card-hover: #2a2520;
+      --bg-input: #1a1613;
+      --bg-input-focus: #201c18;
+      --border: #342e28;
+      --border-focus: #e8604c;
+      --accent: #e8604c;
+      --accent-hover: #d4513f;
+      --accent-dim: rgba(232, 96, 76, 0.12);
+      --accent-glow: rgba(232, 96, 76, 0.25);
+      --gold: #f5a623;
+      --gold-dim: rgba(245, 166, 35, 0.12);
+      --green: #4caf7d;
+      --green-dim: rgba(76, 175, 125, 0.12);
+      --red: #e05555;
+      --red-dim: rgba(224, 85, 85, 0.12);
+      --blue: #5b9cf6;
+      --blue-dim: rgba(91, 156, 246, 0.12);
+      --purple: #b07acc;
+      --text-primary: #f5f0eb;
+      --text-secondary: #9e9590;
+      --text-muted: #6b625c;
+      --text-inverse: #181412;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --shadow-card: 0 2px 12px rgba(0,0,0,0.35);
+      --shadow-btn: 0 4px 14px rgba(232,96,76,0.30);
+      --transition: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    h1 {
-      font-size: 18px;
-      margin: 0 0 15px 0;
-      color: #333;
-      text-align: center;
+    body {
+      width: 340px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg-base);
+      color: var(--text-primary);
+      padding: 14px;
+      margin: 0;
+      line-height: 1.5;
     }
 
-    .tabs {
+    /* ---- HEADER ---- */
+    .header {
       display: flex;
-      margin-bottom: 15px;
-      border-bottom: 2px solid #eee;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .header-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+
+    .header-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: white;
+    }
+
+    .header-text h1 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.2px;
+      line-height: 1.2;
+    }
+
+    .header-text p {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    /* ---- TABS ---- */
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      background: var(--bg-card);
+      padding: 4px;
+      border-radius: var(--radius-lg);
+      margin-bottom: 14px;
+      border: 1px solid var(--border);
     }
 
     .tab {
-      flex: 1;
-      padding: 10px;
-      text-align: center;
-      cursor: pointer;
+      padding: 7px 4px;
       border: none;
-      background: none;
-      font-size: 13px;
-      color: #666;
-      transition: all 0.3s;
+      border-radius: var(--radius-md);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition);
+      background: transparent;
+      color: var(--text-muted);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .tab svg {
+      width: 15px;
+      height: 15px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     .tab.active {
-      color: #FF6B6B;
-      border-bottom: 2px solid #FF6B6B;
-      margin-bottom: -2px;
+      background: var(--bg-card-hover);
+      color: var(--accent);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
     }
 
+    .tab:hover:not(.active) {
+      color: var(--text-secondary);
+    }
+
+    /* ---- PANELS ---- */
     .panel {
       display: none;
     }
@@ -60,278 +152,910 @@
       display: block;
     }
 
-    .input-group {
-      margin-bottom: 12px;
+    /* ---- SECTION ---- */
+    .section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      margin-bottom: 10px;
     }
 
-    label {
+    .section-title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    /* ---- FORM ELEMENTS ---- */
+    .field {
+      margin-bottom: 10px;
+    }
+
+    .field:last-child {
+      margin-bottom: 0;
+    }
+
+    .field-label {
       display: block;
-      font-size: 13px;
-      color: #666;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
       margin-bottom: 5px;
     }
 
     input[type="number"],
-    textarea {
+    input[type="text"],
+    input[type="password"],
+    textarea,
+    select {
       width: 100%;
-      padding: 10px;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
-      font-size: 14px;
-      box-sizing: border-box;
-      transition: border-color 0.3s;
+      padding: 9px 11px;
+      background: var(--bg-input);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      color: var(--text-primary);
+      transition: all var(--transition);
+      outline: none;
+      font-family: inherit;
+    }
+
+    input[type="number"]:focus,
+    input[type="text"]:focus,
+    input[type="password"]:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--border-focus);
+      background: var(--bg-input-focus);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: var(--text-muted);
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
     }
 
     textarea {
       resize: vertical;
       min-height: 60px;
+      line-height: 1.5;
     }
 
-    input:focus,
-    textarea:focus {
-      outline: none;
-      border-color: #FF6B6B;
+    select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239e9590' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 28px;
     }
 
-    .delay-inputs {
+    input[type="checkbox"] {
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+      accent-color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .checkbox-label {
       display: flex;
       align-items: center;
       gap: 8px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      user-select: none;
     }
 
-    .delay-inputs input {
+    /* ---- DELAY INPUTS ---- */
+    .delay-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .delay-row input {
       flex: 1;
       text-align: center;
     }
 
-    .delay-inputs span {
-      color: #666;
-      font-weight: bold;
+    .delay-sep {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+      flex-shrink: 0;
     }
 
-    input[type="checkbox"] {
-      width: auto;
-      margin-right: 8px;
-      cursor: pointer;
-    }
-
-    label:has(input[type="checkbox"]) {
-      display: flex;
-      align-items: center;
-      cursor: pointer;
-      font-size: 14px;
-      color: #333;
-    }
-
+    /* ---- BUTTONS ---- */
     .btn {
       width: 100%;
-      padding: 12px;
+      padding: 11px 16px;
       border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.3s ease;
-      margin-bottom: 8px;
+      transition: all var(--transition);
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+      background: var(--accent);
       color: white;
-      box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+      box-shadow: var(--shadow-btn);
     }
 
     .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(255, 107, 107, 0.5);
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(232,96,76,0.40);
     }
 
-    .btn-stop {
-      background: #666;
-      color: white;
+    .btn-primary:active {
+      transform: translateY(0) scale(0.98);
+    }
+
+    .btn-secondary {
+      background: var(--bg-card-hover);
+      color: var(--text-primary);
+      border: 1.5px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--text-muted);
+      background: #302a24;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1.5px solid var(--border);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-danger {
+      background: var(--red-dim);
+      color: var(--red);
+      border: 1.5px solid rgba(224,85,85,0.2);
+    }
+
+    .btn-danger:hover {
+      background: rgba(224,85,85,0.2);
+    }
+
+    .btn-ai {
+      background: var(--accent-dim);
+      color: var(--accent);
+      border: 1.5px solid rgba(232,96,76,0.2);
+    }
+
+    .btn-ai:hover {
+      background: rgba(232,96,76,0.2);
+    }
+
+    .btn-sm {
+      padding: 7px 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-row .btn {
+      flex: 1;
+    }
+
+    .btn-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* ---- STATUS & PROGRESS ---- */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 9px 12px;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .status-dot.active {
+      background: var(--green);
+      box-shadow: 0 0 8px rgba(76,175,125,0.5);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    .status-dot.error {
+      background: var(--red);
+      box-shadow: 0 0 8px rgba(224,85,85,0.5);
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .status-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+      flex: 1;
+    }
+
+    .progress-num {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+      min-width: 50px;
+      text-align: right;
+    }
+
+    /* ---- RESULT / ALERT ---- */
+    .alert {
+      padding: 8px 11px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 8px;
+      display: none;
+      line-height: 1.4;
+    }
+
+    .alert.show {
+      display: block;
+    }
+
+    .alert-success {
+      background: var(--green-dim);
+      color: var(--green);
+      border: 1px solid rgba(76,175,125,0.2);
+    }
+
+    .alert-error {
+      background: var(--red-dim);
+      color: var(--red);
+      border: 1px solid rgba(224,85,85,0.2);
+    }
+
+    .alert-info {
+      background: var(--blue-dim);
+      color: var(--blue);
+      border: 1px solid rgba(91,156,246,0.2);
+    }
+
+    .alert-warning {
+      background: var(--gold-dim);
+      color: var(--gold);
+      border: 1px solid rgba(245,166,35,0.2);
+    }
+
+    /* ---- API KEY STATUS BADGE ---- */
+    .api-badge {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 11px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .api-badge.configured {
+      background: var(--green-dim);
+      color: var(--green);
+    }
+
+    .api-badge.not-configured {
+      background: var(--gold-dim);
+      color: var(--gold);
+    }
+
+    .api-badge .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .api-badge.configured .dot {
+      background: var(--green);
+    }
+
+    .api-badge.not-configured .dot {
+      background: var(--gold);
+    }
+
+    /* ---- MODE SELECTOR (AI tab) ---- */
+    .mode-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .mode-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--bg-input);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .mode-card:hover {
+      border-color: var(--text-muted);
+    }
+
+    .mode-card.selected {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .mode-card input[type="radio"] {
+      width: 15px;
+      height: 15px;
+      margin-top: 1px;
+      accent-color: var(--accent);
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .mode-card-body {
+      flex: 1;
+    }
+
+    .mode-card-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+
+    .mode-card-desc {
+      font-size: 10px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* ---- AI PREVIEW ---- */
+    .ai-preview-box {
+      background: var(--bg-input);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-bottom: 8px;
       display: none;
     }
 
-    .status {
-      margin-top: 12px;
-      padding: 10px;
-      background: #f5f5f5;
-      border-radius: 8px;
-      text-align: center;
+    .ai-preview-box.show {
+      display: block;
+    }
+
+    .ai-preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 11px;
+      border-bottom: 1px solid var(--border);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-muted);
+    }
+
+    .ai-preview-body {
+      padding: 11px;
       font-size: 13px;
-      color: #333;
+      color: var(--text-primary);
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 90px;
+      overflow-y: auto;
     }
 
-    .status.running {
-      background: #e8f5e9;
-      color: #2e7d32;
+    /* ---- SPINNER ---- */
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(232,96,76,0.2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
     }
 
-    .status.stopped {
-      background: #ffebee;
-      color: #c62828;
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
-    .progress {
-      margin-top: 8px;
-      font-size: 20px;
-      font-weight: bold;
-      color: #FF6B6B;
-      text-align: center;
+    /* ---- HISTORY ---- */
+    .history-count {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .history-list {
+      max-height: 260px;
+      overflow-y: auto;
     }
 
     .history-item {
-      padding: 10px;
-      border: 1px solid #eee;
-      border-radius: 8px;
-      margin-bottom: 8px;
-      background: #fafafa;
+      padding: 10px 12px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: 6px;
     }
 
-    .history-item .name {
-      font-weight: 600;
-      color: #333;
+    .history-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .history-name {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
       margin-bottom: 4px;
     }
 
-    .history-item .message {
+    .history-msg {
       font-size: 12px;
-      color: #666;
-      margin-bottom: 4px;
+      color: var(--text-primary);
+      line-height: 1.4;
       word-break: break-word;
     }
 
-    .history-item .time {
+    .history-time {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .history-empty {
+      text-align: center;
+      padding: 24px;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .history-empty svg {
+      width: 32px;
+      height: 32px;
+      stroke: var(--text-muted);
+      fill: none;
+      stroke-width: 1.5;
+      margin-bottom: 8px;
+      opacity: 0.5;
+    }
+
+    /* ---- DIVIDER ---- */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 10px 0;
+    }
+
+    /* ---- TIME SLOTS (Message tab) ---- */
+    .time-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      background: var(--gold-dim);
+      border-radius: var(--radius-sm);
       font-size: 11px;
-      color: #999;
+      color: var(--gold);
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    /* ---- SCROLLBAR ---- */
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 2px;
+    }
+
+    /* ---- NO-SPINNER INPUTS ---- */
+    input[type="number"] {
+      -webkit-appearance: none;
+    }
+
+    /* ---- CUSTOM MODEL INPUT ---- */
+    #customModelInput {
+      margin-top: 6px;
     }
   </style>
 </head>
 
 <body>
-  <div class="container">
-    <h1>🔥 Tinder Auto Tool</h1>
 
-    <div class="tabs">
-      <button class="tab active" data-tab="gamepad">🎮 Gamepad</button>
-      <button class="tab" data-tab="message">💬 Message</button>
-      <button class="tab" data-tab="history">📜 History</button>
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
     </div>
+    <div class="header-text">
+      <h1>Tinder Auto Tool</h1>
+      <p>Tự động gửi tin nhắn hàng loạt</p>
+    </div>
+  </div>
 
-    <!-- Gamepad Panel -->
-    <div id="gamepad-panel" class="panel active">
-      <div class="input-group">
-        <label>Số lần click:</label>
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" data-tab="gamepad">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+      Swipe
+    </button>
+    <button class="tab" data-tab="message">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      Message
+    </button>
+    <button class="tab" data-tab="history">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+      History
+    </button>
+    <button class="tab" data-tab="ai">
+      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 18a8 8 0 110-16 8 8 0 010 16zm-1-5h2v2h-2zm1.61-9.96a2.5 2.5 0 01.89 2.46h-1.78a1.5 1.5 0 00-1.78 1.33V15h2v1h-3.5a.5.5 0 010-1H11v-1.54a2.5 2.5 0 012.61-2.5z"/></svg>
+      AI
+    </button>
+  </div>
+
+  <!-- ===== GAMEPAD PANEL ===== -->
+  <div id="gamepad-panel" class="panel active">
+
+    <div class="section">
+      <div class="section-title">Swipe Configuration</div>
+
+      <div class="field">
+        <label class="field-label">Số lần swipe</label>
         <input type="number" id="clickCount" value="10" min="1" max="1000">
       </div>
 
-      <div class="input-group">
-        <label>Delay (giây):</label>
-        <div class="delay-inputs">
-          <input type="number" id="minDelay" value="1" min="0.5" max="60" step="0.5">
-          <span>~</span>
-          <input type="number" id="maxDelay" value="3" min="0.5" max="60" step="0.5">
+      <div class="field">
+        <label class="field-label">Thời gian chờ (giây)</label>
+        <div class="delay-row">
+          <input type="number" id="minDelay" value="1" min="0.5" max="60" step="0.5" placeholder="Từ">
+          <span class="delay-sep">~</span>
+          <input type="number" id="maxDelay" value="3" min="0.5" max="60" step="0.5" placeholder="Đến">
         </div>
       </div>
-
-      <button id="startBtn" class="btn btn-primary">▶️ Start Auto Click</button>
-      <button id="stopBtn" class="btn btn-stop">⏹️ Stop</button>
     </div>
 
-    <!-- Message Panel -->
-    <div id="message-panel" class="panel">
-      <div class="input-group">
-        <label>
+    <div class="status-bar">
+      <div class="status-dot" id="gamepadDot"></div>
+      <div class="status-text" id="status">San sang</div>
+    </div>
+
+    <button id="startBtn" class="btn btn-primary">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Bat dau swipe
+    </button>
+    <button id="stopBtn" class="btn btn-danger" style="display:none;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+      Dung lai
+    </button>
+  </div>
+
+  <!-- ===== MESSAGE PANEL ===== -->
+  <div id="message-panel" class="panel">
+
+    <!-- Send Mode -->
+    <div class="section">
+      <div class="section-title">Che do gui tin nhan</div>
+
+      <div class="field">
+        <label class="checkbox-label">
           <input type="checkbox" id="randomQuote">
-          Gửi ngẫu nhiên câu châm ngôn
+          Gui cau cham ngon ngau nhien
         </label>
       </div>
 
-      <div class="input-group" id="singleMessageGroup">
-        <label>Tin nhắn mặc định:</label>
-        <textarea id="messageText">Chúc ngày mới tốt lành! 🌸</textarea>
+      <!-- Fixed message textarea -->
+      <div class="field" id="singleMessageGroup">
+        <label class="field-label">Noi dung tin nhan</label>
+        <textarea id="messageText" placeholder="Nhap tin nhan cua ban..."></textarea>
       </div>
 
-      <div class="input-group" id="quotesGroup" style="display: none;">
-        <label>
-          <input type="checkbox" id="timeBasedQuotes">
-          🕐 Quotes theo buổi (sáng/trưa/tối)
-        </label>
-
-        <!-- Single quotes list (default) -->
-        <div id="singleQuotesGroup">
-          <label>Danh sách câu châm ngôn (mỗi dòng 1 câu):</label>
-          <textarea id="quotesList" style="min-height: 100px;">Chúc bạn ngày mới tốt lành! 🌸
-Hãy luôn mỉm cười nhé! 😊
-Cuộc sống thật đẹp khi có bạn ❤️
-Chúc một ngày tràn đầy năng lượng! ⚡
-Gửi bạn những điều tốt đẹp nhất 🌟</textarea>
-        </div>
-
-        <!-- Time-based quotes (hidden by default) -->
-        <div id="timeBasedQuotesGroup" style="display: none;">
-          <div style="margin-bottom: 10px; padding: 8px; background: #fff3e0; border-radius: 6px; font-size: 12px;">
-            🕐 Buổi hiện tại: <strong id="currentTimeSlot">--</strong>
-          </div>
-
-          <label>🌅 Buổi sáng (5h - 11h):</label>
-          <textarea id="morningQuotes" style="min-height: 60px;">Chào buổi sáng! Chúc bạn một ngày mới tràn đầy năng lượng! ☀️
-Sáng nay thức dậy, mình nghĩ đến bạn đầu tiên 🌸
-Mỗi buổi sáng là một khởi đầu mới. Chúc bạn nhiều niềm vui! 🌈</textarea>
-
-          <label style="margin-top: 10px;">🌞 Buổi trưa (11h - 17h):</label>
-          <textarea id="noonQuotes" style="min-height: 60px;">Buổi trưa vui vẻ! Nhớ ăn trưa đầy đủ nhé 🍜
-Giữa ngày bận rộn, gửi bạn chút năng lượng tích cực! 💪
-Chúc buổi trưa an lành, chiều thêm may mắn! ✨</textarea>
-
-          <label style="margin-top: 10px;">🌙 Buổi tối (17h - 5h):</label>
-          <textarea id="eveningQuotes" style="min-height: 60px;">Buổi tối an lành! Ngày hôm nay của bạn thế nào? 🌙
-Chúc bạn một đêm ngủ ngon và những giấc mơ đẹp 💤
-Cuối ngày rồi, thư giãn và nghỉ ngơi thật tốt nhé! 🌟</textarea>
-        </div>
-
-        <button id="fetchQuotesBtn" class="btn" style="background: #4CAF50; color: white; margin-top: 8px;">
-          🔄 Lấy quotes từ API
+      <!-- AI generation button in message tab -->
+      <div class="field" id="aiGenerateGroup">
+        <button id="generateAiMsgBtn" class="btn btn-ai">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 18a8 8 0 110-16 8 8 0 010 16zm-1-5h2v2h-2zm1.61-9.96a2.5 2.5 0 01.89 2.46h-1.78a1.5 1.5 0 00-1.78 1.33V15h2v1h-3.5a.5.5 0 010-1H11v-1.54a2.5 2.5 0 012.61-2.5z"/></svg>
+          Tao tin nhan bang AI
         </button>
-        <div id="quotesStatus" style="font-size: 12px; color: #666; margin-top: 4px;"></div>
+        <div id="generateAiStatus"></div>
+
+        <div id="generateAiPreview" class="ai-preview-box">
+          <div class="ai-preview-header">
+            <span>Xem truoc AI</span>
+          </div>
+          <div class="ai-preview-body" id="generateAiPreviewText"></div>
+        </div>
+
+        <div class="btn-row" id="aiPreviewActions" style="display:none; margin-top:6px;">
+          <button id="useAiMsgBtn" class="btn btn-sm btn-secondary">Dung tin nay</button>
+          <button id="regenerateAiMsgBtn" class="btn btn-sm btn-ghost">Tao lai</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quotes section (hidden by default) -->
+    <div class="section" id="quotesGroup" style="display:none;">
+      <div class="section-title">Danh sach cau cham ngon</div>
+
+      <div class="field">
+        <label class="checkbox-label">
+          <input type="checkbox" id="timeBasedQuotes">
+          Theo buoi trong ngay
+        </label>
       </div>
 
-      <div class="input-group">
-        <label>Số người gửi (0 = tất cả):</label>
+      <div id="singleQuotesGroup">
+        <div class="field">
+          <textarea id="quotesList" style="min-height:80px;" placeholder="Mot cau moi dong...">Chuc ban ngay moi tot lanh!
+Hay luon mem cuoi nhe!
+Cuoc song that dep khi co ban</textarea>
+        </div>
+      </div>
+
+      <div id="timeBasedQuotesGroup" style="display:none;">
+        <div class="time-indicator" id="currentTimeSlotWrap">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+          Hien tai:
+          <strong id="currentTimeSlot">--</strong>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Sang (5h - 11h)</label>
+          <textarea id="morningQuotes" style="min-height:50px;">Chao buoi sang! Chuc ban mot ngay moi tràn đầy năng lượng!
+Sang nay thuc day, mình nghĩ đến bạn đầu tiên</textarea>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Trua (11h - 17h)</label>
+          <textarea id="noonQuotes" style="min-height:50px;">Buoi trua vui ve! Nho an trua đầy đủ nhe
+Giữa ngày bận rộn, gửi bạn chút năng lượng tích cực!</textarea>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Toi (17h - 5h)</label>
+          <textarea id="eveningQuotes" style="min-height:50px;">Buoi toi an lành! Ngày hom nay cua ban the nao?
+Chuc ban mot đêm ngu ngon va những giấc mo đẹp</textarea>
+        </div>
+      </div>
+
+      <button id="fetchQuotesBtn" class="btn btn-sm btn-ghost">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+        Lay quotes tu API
+      </button>
+      <div id="quotesStatus"></div>
+    </div>
+
+    <!-- Sending config -->
+    <div class="section">
+      <div class="section-title">Cau hinh gui</div>
+
+      <div class="field">
+        <label class="field-label">So nguoi gui (0 = tat ca)</label>
         <input type="number" id="messageCount" value="0" min="0" max="100">
       </div>
 
-      <div class="input-group">
-        <label>Delay giữa mỗi người (giây):</label>
-        <div class="delay-inputs">
+      <div class="field">
+        <label class="field-label">Delay giữa mỗi nguoi (giây)</label>
+        <div class="delay-row">
           <input type="number" id="msgMinDelay" value="3" min="1" max="60" step="0.5">
-          <span>~</span>
+          <span class="delay-sep">~</span>
           <input type="number" id="msgMaxDelay" value="5" min="1" max="60" step="0.5">
         </div>
       </div>
-
-      <button id="startMsgBtn" class="btn btn-primary">📨 Gửi tin nhắn hàng loạt</button>
-      <button id="stopMsgBtn" class="btn btn-stop">⏹️ Stop</button>
     </div>
 
-    <!-- History Panel -->
-    <div id="history-panel" class="panel">
-      <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-        <button id="refreshHistoryBtn" class="btn" style="flex: 1; background: #2196F3; color: white;">🔄
-          Refresh</button>
-        <button id="clearHistoryBtn" class="btn" style="flex: 1; background: #f44336; color: white;">🗑️ Xóa tất
-          cả</button>
-      </div>
-      <div id="historyCount" style="font-size: 12px; color: #666; margin-bottom: 8px;">Đang tải...</div>
-      <div id="historyList" style="max-height: 300px; overflow-y: auto;">
-        <!-- History items sẽ được render ở đây -->
-      </div>
-    </div>
-
-    <div id="status" class="status">Sẵn sàng</div>
-    <div id="progress" class="progress"></div>
+    <button id="startMsgBtn" class="btn btn-primary">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      Gui tin nhan hang loat
+    </button>
+    <button id="stopMsgBtn" class="btn btn-danger" style="display:none;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+      Dung lai
+    </button>
   </div>
+
+  <!-- ===== HISTORY PANEL ===== -->
+  <div id="history-panel" class="panel">
+
+    <div class="btn-row" style="margin-bottom:10px;">
+      <button id="refreshHistoryBtn" class="btn btn-sm btn-ghost">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+        Refresh
+      </button>
+      <button id="clearHistoryBtn" class="btn btn-sm btn-danger">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+        Xoa tat ca
+      </button>
+    </div>
+
+    <div class="history-count" id="historyCount">Dang tai...</div>
+    <div class="history-list" id="historyList">
+      <div class="history-empty">
+        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        <div>Chua co tin nhan nao</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== AI PANEL ===== -->
+  <div id="ai-panel" class="panel">
+
+    <!-- API Key -->
+    <div class="section">
+      <div class="section-title">OpenRouter API</div>
+
+      <div class="api-badge not-configured" id="apiKeyStatus">
+        <div class="dot"></div>
+        <span>Chua cau hinh API Key</span>
+      </div>
+
+      <div class="field">
+        <input type="password" id="apiKeyInput" placeholder="sk-or-v1-..." style="font-family: monospace; font-size:12px;">
+      </div>
+
+      <div class="btn-row">
+        <button id="saveApiKeyBtn" class="btn btn-sm btn-primary">Luu</button>
+        <button id="testApiKeyBtn" class="btn btn-sm btn-ghost">Test</button>
+      </div>
+
+      <div id="testResult" class="alert"></div>
+    </div>
+
+    <!-- Message Mode -->
+    <div class="section">
+      <div class="section-title">Che do tin nhan</div>
+
+      <div class="mode-group">
+        <label class="mode-card selected" data-mode="fixed">
+          <input type="radio" name="aiMode" value="fixed" checked>
+          <div class="mode-card-body">
+            <div class="mode-card-title">Tin nhan co dinh</div>
+            <div class="mode-card-desc">Gui cung mot tin nhan cho tat ca</div>
+          </div>
+        </label>
+
+        <label class="mode-card" data-mode="random">
+          <input type="radio" name="aiMode" value="random">
+          <div class="mode-card-body">
+            <div class="mode-card-title">Ngau nhien</div>
+            <div class="mode-card-desc">Gui cau cham ngon ngau nhien tu danh sach</div>
+          </div>
+        </label>
+
+        <label class="mode-card" data-mode="ai">
+          <input type="radio" name="aiMode" value="ai">
+          <div class="mode-card-body">
+            <div class="mode-card-title">AI OpenRouter</div>
+            <div class="mode-card-desc">Dung AI de tao tin nhan ca nhan hoa</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Model -->
+    <div class="section">
+      <div class="section-title">Model AI</div>
+
+      <div class="field">
+        <select id="modelSelect">
+          <option value="google/gemini-2.5-flash">Google Gemini 2.5 Flash (recommended)</option>
+          <option value="google/gemini-2.0-flash-exp">Google Gemini 2.0 Flash (free)</option>
+          <option value="anthropic/claude-3-haiku">Anthropic Claude 3 Haiku</option>
+          <option value="openai/gpt-4o-mini">OpenAI GPT-4o Mini</option>
+          <option value="deepseek/deepseek-chat-v3-0324">DeepSeek Chat V3</option>
+          <option value="custom">Custom model ID...</option>
+        </select>
+        <input type="text" id="customModelInput" placeholder="VD: google/gemini-2.0-flash" style="display:none; margin-top:6px; font-family:monospace; font-size:11px;">
+      </div>
+    </div>
+
+    <!-- Prompts -->
+    <div class="section">
+      <div class="section-title">Prompt cau hinh</div>
+
+      <div class="field">
+        <label class="field-label">System Prompt</label>
+        <textarea id="systemPromptInput" style="min-height:46px; font-size:11px; font-family:monospace;" placeholder="Ban la...">Ban la mot nguoi viet tin nhan tan gai (gui tin nhan dau tien cho phu nu tren Tinder). Viet tin nhan than thien, tu nhien, hai huoc nhe, phu hop voi van hoa Viet Nam. Khong qua 100 ky tu. Khong dung emoji qua nhieu.</textarea>
+      </div>
+
+      <div class="field">
+        <label class="field-label">User Prompt (dung {{profile}} de chèn thông tin)</label>
+        <textarea id="userPromptInput" style="min-height:46px; font-size:11px; font-family:monospace;" placeholder="Viet mot tin nhan...">Viet mot tin nhan mo dau cho nguoi nay: {{profile}}. Viet bang tieng Viet, tu nhien nhu đang chat that.</textarea>
+      </div>
+
+      <div class="btn-row">
+        <button id="testAiGenerateBtn" class="btn btn-sm btn-ai">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 18a8 8 0 110-16 8 8 0 010 16zm-1-5h2v2h-2zm1.61-9.96a2.5 2.5 0 01.89 2.46h-1.78a1.5 1.5 0 00-1.78 1.33V15h2v1h-3.5a.5.5 0 010-1H11v-1.54a2.5 2.5 0 012.61-2.5z"/></svg>
+          Thu tao tin nhan
+        </button>
+      </div>
+
+      <div id="aiGenerating" style="display:none; align-items:center; gap:8px; padding:9px 11px; background:var(--accent-dim); border-radius:8px; margin-top:8px; font-size:12px; color:var(--accent);">
+        <div class="spinner"></div>
+        AI đang tao tin nhan...
+      </div>
+
+      <div id="aiPreview" class="ai-preview-box" style="margin-top:8px;">
+        <div class="ai-preview-header">
+          <span>Xem truoc tin nhan AI</span>
+        </div>
+        <div class="ai-preview-body" id="aiPreviewText"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM STATUS -->
+  <div id="progress" style="font-size:20px; font-weight:800; color:var(--accent); text-align:center; margin-top:10px; font-variant-numeric:tabular-nums;"></div>
+  <div id="status" class="status-text" style="display:none;"></div>
+
+  <script src="lib/openrouter.js"></script>
   <script src="popup.js"></script>
 </body>
-
 </html>

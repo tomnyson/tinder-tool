@@ -879,6 +879,106 @@ if (window.__tinderAutoToolLoaded) {
 
     // Kích hoạt kiểm tra khôi phục khi trang tải xong
     setTimeout(checkAndResumeBulkMessage, 4000);
+    setTimeout(checkAndResumeAIMode, 4500);
+
+    // ========== OPENROUTER AI MESSAGE GENERATION ==========
+    async function generateAIMessage(apiKey, systemPrompt, userPrompt, model, profile) {
+        try {
+            const defaultSystemPrompt = `Bạn là một người viết tin nhắn tán gái (gửi tin nhắn đầu tiên cho phụ nữ trên Tinder). Viết tin nhắn thân thiện, tự nhiên, hài hước nhẹ, phù hợp với văn hóa Việt Nam. Không quá 100 ký tự. Không dùng emoji quá nhiều.`;
+
+            const finalSystemPrompt = systemPrompt || defaultSystemPrompt;
+            const finalUserPrompt = userPrompt || 'Viết một tin nhắn mở đầu cho người này: {{profile}}. Viết bằng tiếng Việt, tự nhiên như đang chat thật.';
+            const finalModel = model || 'google/gemini-2.5-flash';
+            const prompt = finalUserPrompt.replace('{{profile}}', profile || 'một cô gái');
+
+            console.log(`[AI] Gọi model: ${finalModel} cho profile: "${prompt}"`);
+
+            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json',
+                    'HTTP-Referer': chrome.runtime.getURL(''),
+                    'X-Title': 'Tinder Auto Tool'
+                },
+                body: JSON.stringify({
+                    model: finalModel,
+                    messages: [
+                        { role: 'system', content: finalSystemPrompt },
+                        { role: 'user', content: prompt }
+                    ],
+                    max_tokens: 150,
+                    temperature: 0.9
+                })
+            });
+
+            if (!response.ok) {
+                let errorDetail = '';
+                try {
+                    const errorData = await response.json();
+                    console.error('[AI] OpenRouter error response:', errorData);
+                    // Try multiple error formats
+                    errorDetail = errorData.error?.message
+                        || errorData.error?.code
+                        || errorData.error?.type
+                        || JSON.stringify(errorData.error)
+                        || `HTTP ${response.status}`;
+                } catch (_) {
+                    errorDetail = `HTTP ${response.status}`;
+                }
+
+                // Map common errors to helpful Vietnamese messages
+                const errLower = errorDetail.toLowerCase();
+                if (errLower.includes('invalid_api_key') || errLower.includes('api key')) {
+                    return { success: false, error: 'API Key không hợp lệ! Vào tab AI để cập nhật.' };
+                }
+                if (errLower.includes('insufficient') || errLower.includes('credit')) {
+                    return { success: false, error: 'Hết credits! Vào openrouter.ai để nạp thêm.' };
+                }
+                if (errLower.includes('model') && errLower.includes('not found')) {
+                    return { success: false, error: `Model "${finalModel}" không khả dụng. Chọn model khác trong tab AI.` };
+                }
+                if (errLower.includes('context') && errLower.includes('length')) {
+                    return { success: false, error: 'Prompt quá dài. Giảm độ dài System Prompt.' };
+                }
+                return { success: false, error: `[${response.status}] ${errorDetail}` };
+            }
+
+            const data = await response.json();
+            const message = data.choices?.[0]?.message?.content?.trim();
+            if (!message) throw new Error('No message generated');
+            return { success: true, message };
+        } catch (error) {
+            console.error('[AI] generateAIMessage error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    function extractProfileInfo() {
+        let profileText = '';
+        const nameEl = document.querySelector('h1[class*="profile"], div[class*="profileName"], span[class*="matchName"]');
+        if (nameEl) {
+            profileText += nameEl.textContent.trim();
+        }
+        const bioSelectors = [
+            'div[class*="bio"] span',
+            'div[class*="Bio"] p',
+            'p[class*="bio"]',
+            'span[class*="bio"]',
+            'div[class*="description"]'
+        ];
+        for (const selector of bioSelectors) {
+            const els = document.querySelectorAll(selector);
+            els.forEach(el => {
+                const text = el.textContent.trim();
+                if (text && text.length > 10 && text.length < 500) {
+                    profileText += '. ' + text;
+                }
+            });
+        }
+        profileText = profileText.replace(/\s+/g, ' ').trim();
+        return profileText || 'một cô gái';
+    }
 
     // ========== MESSAGE LISTENER ==========
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -896,15 +996,28 @@ if (window.__tinderAutoToolLoaded) {
                 break;
 
             case 'startBulkMessage':
-                const started = startBulkMessage(
-                    request.message,
-                    request.quotes,
-                    request.useRandomQuotes,
-                    request.count,
-                    request.minDelay,
-                    request.maxDelay
-                );
-                sendResponse({ started: started });
+                if (request.aiMode) {
+                    startBulkMessageAIMode(
+                        request.openRouterApiKey,
+                        request.aiSystemPrompt,
+                        request.aiUserPrompt,
+                        request.aiModel,
+                        request.count,
+                        request.minDelay,
+                        request.maxDelay
+                    );
+                    sendResponse({ started: true });
+                } else {
+                    const started = startBulkMessage(
+                        request.message,
+                        request.quotes,
+                        request.useRandomQuotes,
+                        request.count,
+                        request.minDelay,
+                        request.maxDelay
+                    );
+                    sendResponse({ started: started });
+                }
                 break;
 
             case 'stopBulkMessage':
@@ -912,21 +1025,233 @@ if (window.__tinderAutoToolLoaded) {
                 sendResponse({ stopped: true });
                 break;
 
+            case 'generateProfileAIMessage':
+                return (async () => {
+                    try {
+                        const profileInfo = extractProfileInfo();
+                        const result = await generateAIMessage(
+                            request.apiKey,
+                            request.systemPrompt,
+                            request.userPrompt,
+                            request.model,
+                            profileInfo
+                        );
+                        if (result.success) {
+                            return { success: true, message: result.message };
+                        } else {
+                            return { success: false, error: result.error };
+                        }
+                    } catch (e) {
+                        return { success: false, error: e.message };
+                    }
+                })();
+
             case 'getHistory':
                 getMessageHistory().then(history => {
                     sendResponse({ history: history });
                 });
-                return true; // async response
+                return true;
 
             case 'clearHistory':
                 clearMessageHistory().then(() => {
                     sendResponse({ cleared: true });
                 });
-                return true; // async response
+                return true;
         }
 
         return true;
     });
+
+    // ========== AI BULK MESSAGE MODE ==========
+    async function startBulkMessageAIMode(apiKey, systemPrompt, userPrompt, model, count, minDelay, maxDelay) {
+        stopBulkMessage();
+        msgMinDelay = minDelay;
+        msgMaxDelay = maxDelay;
+
+        const items = getMessageItems();
+        if (items.length === 0) {
+            chrome.runtime.sendMessage({ action: 'error', message: 'Không tìm thấy danh sách tin nhắn!' });
+            return;
+        }
+
+        totalMessages = count > 0 ? count : 9999;
+        currentMessageIndex = 0;
+        processedHrefs = [];
+        isSendingMessages = true;
+
+        const state = {
+            isRunning: true,
+            aiMode: true,
+            openRouterApiKey: apiKey,
+            aiSystemPrompt: systemPrompt,
+            aiUserPrompt: userPrompt,
+            aiModel: model || 'google/gemini-2.5-flash',
+            totalMessages,
+            currentMessageIndex: 0,
+            msgMinDelay,
+            msgMaxDelay,
+            processedHrefs: []
+        };
+        StorageHelper.set({ bulkMsgState: state });
+
+        console.log(`🤖 Bắt đầu gửi tin nhắn AI (model: ${model}) cho ${totalMessages === 9999 ? 'tất cả' : totalMessages} người`);
+        clickAndSendMessageAIMode(apiKey, systemPrompt, userPrompt, model);
+    }
+
+    async function clickAndSendMessageAIMode(apiKey, systemPrompt, userPrompt, model) {
+        if (!isSendingMessages) return;
+        if (currentMessageIndex >= totalMessages) {
+            stopBulkMessage();
+            chrome.runtime.sendMessage({ action: 'completed', total: currentMessageIndex });
+            return;
+        }
+
+        StorageHelper.get(['bulkMsgState']).then((res) => {
+            if (res.bulkMsgState && res.bulkMsgState.isRunning) {
+                res.bulkMsgState.currentMessageIndex = currentMessageIndex;
+                res.bulkMsgState.processedHrefs = processedHrefs;
+                StorageHelper.set({ bulkMsgState: res.bulkMsgState });
+            }
+        }).catch(e => console.error('Lỗi lưu tiến trình:', e));
+
+        processCurrentItemAIMode(apiKey, systemPrompt, userPrompt, model);
+    }
+
+    async function processCurrentItemAIMode(apiKey, systemPrompt, userPrompt, model) {
+        const items = getMessageItems();
+        let targetItem = null;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i] && items[i].href && !processedHrefs.includes(items[i].href)) {
+                targetItem = items[i];
+                break;
+            }
+        }
+
+        if (!targetItem) {
+            console.log('📜 Hết người mới, đang cuộn...');
+            const foundNew = await scrollToFindNewPerson(15);
+            if (!foundNew) {
+                stopBulkMessage();
+                chrome.runtime.sendMessage({ action: 'completed', total: currentMessageIndex });
+                return;
+            }
+            setTimeout(() => processCurrentItemAIMode(apiKey, systemPrompt, userPrompt, model), 1000);
+            return;
+        }
+
+        processedHrefs.push(targetItem.href);
+        const name = targetItem.getAttribute('aria-label') || `Person ${currentMessageIndex + 1}`;
+
+        console.log(`\n========================================`);
+        console.log(`🤖 [${currentMessageIndex + 1}/${totalMessages}] Xử lý: ${name}`);
+        console.log(`========================================`);
+
+        scrollItemIntoView(targetItem);
+
+        setTimeout(async () => {
+            targetItem.click();
+
+            setTimeout(async () => {
+                const textarea = document.querySelector('textarea[placeholder="Type a message"]');
+                if (!textarea) {
+                    console.log('❌ Không tìm thấy textarea');
+                    currentMessageIndex++;
+                    chrome.runtime.sendMessage({ action: 'updateProgress', current: currentMessageIndex, total: totalMessages });
+                    scheduleNextPersonAIMode(apiKey, systemPrompt, userPrompt, model);
+                    return;
+                }
+
+                const profileInfo = extractProfileInfo();
+                console.log('🤖 Profile:', profileInfo);
+
+                const result = await generateAIMessage(apiKey, systemPrompt, userPrompt, model, profileInfo);
+
+                if (!result.success) {
+                    console.log('❌ Lỗi AI:', result.error);
+                    chrome.runtime.sendMessage({ action: 'error', message: 'Lỗi AI: ' + result.error });
+                    scheduleNextPersonAIMode(apiKey, systemPrompt, userPrompt, model);
+                    return;
+                }
+
+                const aiMessage = result.message;
+                console.log('🤖 Generated:', aiMessage);
+
+                textarea.focus();
+                const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+                nativeInputValueSetter.call(textarea, aiMessage);
+                textarea.dispatchEvent(new Event('input', { bubbles: true }));
+
+                setTimeout(() => {
+                    const sendButton = document.querySelector('button[type="submit"]');
+                    if (sendButton) {
+                        sendButton.click();
+                        saveMessageHistory(name, aiMessage);
+                    }
+                    currentMessageIndex++;
+                    chrome.runtime.sendMessage({ action: 'updateProgress', current: currentMessageIndex, total: totalMessages });
+                    scheduleNextPersonAIMode(apiKey, systemPrompt, userPrompt, model);
+                }, 800);
+            }, 2000);
+        }, 300);
+    }
+
+    function scheduleNextPersonAIMode(apiKey, systemPrompt, userPrompt, model) {
+        if (!isSendingMessages) return;
+        if (currentMessageIndex >= totalMessages) {
+            stopBulkMessage();
+            chrome.runtime.sendMessage({ action: 'completed', total: currentMessageIndex });
+            return;
+        }
+
+        if (currentMessageIndex > 0 && currentMessageIndex % 10 === 0) {
+            console.log(`🧹 Reload bộ nhớ sau ${currentMessageIndex} tin nhắn...`);
+            StorageHelper.get(['bulkMsgState']).then((res) => {
+                if (res.bulkMsgState && res.bulkMsgState.isRunning) {
+                    res.bulkMsgState.currentMessageIndex = currentMessageIndex;
+                    res.bulkMsgState.processedHrefs = processedHrefs;
+                    StorageHelper.set({ bulkMsgState: res.bulkMsgState });
+                }
+            });
+            setTimeout(() => { window.location.reload(); }, 3000);
+            return;
+        }
+
+        const delay = getRandomDelay(msgMinDelay, msgMaxDelay);
+        messageTimeout = setTimeout(() => {
+            clickAndSendMessageAIMode(apiKey, systemPrompt, userPrompt, model);
+        }, delay);
+    }
+
+    async function checkAndResumeAIMode() {
+        try {
+            const res = await StorageHelper.get(['bulkMsgState']);
+            const state = res.bulkMsgState;
+            if (state && state.isRunning && state.aiMode) {
+                console.log('🔄 Khôi phục phiên AI...');
+                isSendingMessages = true;
+                totalMessages = state.totalMessages;
+                currentMessageIndex = state.currentMessageIndex;
+                msgMinDelay = state.msgMinDelay;
+                msgMaxDelay = state.msgMaxDelay;
+                processedHrefs = state.processedHrefs || [];
+
+                const tryResume = async (retries = 0) => {
+                    const list = getMessageItems();
+                    if (list.length === 0 && retries < 5) {
+                        setTimeout(() => tryResume(retries + 1), 2000);
+                        return;
+                    }
+                    if (currentMessageIndex > 0) {
+                        await scrollToFindNewPerson(Math.max(5, Math.ceil(currentMessageIndex / 10)) + 10);
+                    }
+                    clickAndSendMessageAIMode(state.openRouterApiKey, state.aiSystemPrompt, state.aiUserPrompt, state.aiModel);
+                };
+                setTimeout(tryResume, 8000);
+            }
+        } catch (e) {
+            console.error('Lỗi resume AI:', e);
+        }
+    }
 
     console.log('✅ Tinder Auto Tool sẵn sàng!');
 } // End of else block - prevent duplicate injection
