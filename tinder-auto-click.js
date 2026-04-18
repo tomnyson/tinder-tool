@@ -182,6 +182,7 @@ if (window.__tinderAutoToolLoaded) {
       bottom: 160px;
       right: 20px;
       background: white;
+      color: #333;
       border-radius: 12px;
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
       z-index: 99998;
@@ -225,6 +226,7 @@ if (window.__tinderAutoToolLoaded) {
       background: none;
       border: none;
       font-size: 14px;
+      color: #666;
       transition: all 0.2s;
     }
     .quote-tab.active {
@@ -232,7 +234,7 @@ if (window.__tinderAutoToolLoaded) {
       color: #FF6B6B;
       font-weight: bold;
     }
-    .quote-tab:hover { background: #f5f5f5; }
+    .quote-tab:hover { background: #f5f5f5; color: #333; }
     .quote-list {
       max-height: 250px;
       overflow-y: auto;
@@ -245,6 +247,7 @@ if (window.__tinderAutoToolLoaded) {
       transition: all 0.2s;
       margin-bottom: 6px;
       font-size: 13px;
+      color: #333;
       line-height: 1.4;
       border: 1px solid #eee;
     }
@@ -443,12 +446,48 @@ if (window.__tinderAutoToolLoaded) {
     let useRandomQuotes = false;
     let msgMinDelay = 3000;
     let msgMaxDelay = 5000;
+    let processedHrefs = [];
+
+    // ========== STORAGE HELPER ==========
+    // Chống lỗi "Cannot read properties of undefined (reading 'local')" nếu script thay vì content script bị chạy ở môi trường thường (như extension dev reload, userscript, paste console...).
+    const StorageHelper = {
+        async get(keys) {
+            try {
+                if (typeof chrome !== 'undefined' && chrome && chrome.storage && chrome.storage.local) {
+                    return await chrome.storage.local.get(keys);
+                }
+            } catch (e) {
+                console.warn("Chrome storage not available, fallback to localStorage", e);
+            }
+            // Fallback
+            const result = {};
+            keys.forEach(key => {
+                const val = localStorage.getItem('tinder_ext_' + key);
+                if (val) result[key] = JSON.parse(val);
+            });
+            return result;
+        },
+        async set(obj) {
+            try {
+                if (typeof chrome !== 'undefined' && chrome && chrome.storage && chrome.storage.local) {
+                    await chrome.storage.local.set(obj);
+                    return;
+                }
+            } catch (e) {
+                console.warn("Chrome storage not available, fallback to localStorage", e);
+            }
+            // Fallback
+            Object.keys(obj).forEach(key => {
+                localStorage.setItem('tinder_ext_' + key, JSON.stringify(obj[key]));
+            });
+        }
+    };
 
     // ========== MESSAGE HISTORY ==========
     // Lưu lịch sử tin nhắn đã gửi
     async function saveMessageHistory(name, message) {
         try {
-            const result = await chrome.storage.local.get(['messageHistory']);
+            const result = await StorageHelper.get(['messageHistory']);
             const history = result.messageHistory || [];
 
             history.unshift({
@@ -463,7 +502,7 @@ if (window.__tinderAutoToolLoaded) {
                 history.splice(500);
             }
 
-            await chrome.storage.local.set({ messageHistory: history });
+            await StorageHelper.set({ messageHistory: history });
             console.log(`📝 Đã lưu lịch sử: ${name}`);
         } catch (e) {
             console.error('❌ Lỗi lưu lịch sử:', e);
@@ -472,13 +511,13 @@ if (window.__tinderAutoToolLoaded) {
 
     // Lấy lịch sử tin nhắn
     async function getMessageHistory() {
-        const result = await chrome.storage.local.get(['messageHistory']);
+        const result = await StorageHelper.get(['messageHistory']);
         return result.messageHistory || [];
     }
 
     // Xóa lịch sử
     async function clearMessageHistory() {
-        await chrome.storage.local.set({ messageHistory: [] });
+        await StorageHelper.set({ messageHistory: [] });
         console.log('🗑️ Đã xóa lịch sử');
     }
 
@@ -523,46 +562,33 @@ if (window.__tinderAutoToolLoaded) {
         return container;
     }
 
-    // Scroll container xuống để load thêm items
-    async function scrollToLoadMoreItems(targetCount) {
+    // Cuộn xuống cho đến khi tìm thấy tin nhắn chưa được xử lý
+    async function scrollToFindNewPerson(maxScrolls = 20) {
         const container = getMessageListContainer();
         if (!container) {
             console.log('⚠️ Không tìm thấy container để scroll');
-            return;
+            return false;
         }
 
-        let lastCount = 0;
-        let attempts = 0;
-        const maxAttempts = 20; // Giới hạn số lần scroll
+        console.log(`📜 Đang scroll để tìm người nhắn mới...`);
 
-        console.log(`📜 Đang scroll để load thêm items (mục tiêu: ${targetCount})...`);
-
-        while (attempts < maxAttempts) {
-            const currentItems = getMessageItems();
-
-            // Đủ items hoặc không load thêm được
-            if (currentItems.length >= targetCount) {
-                console.log(`✅ Đã load đủ ${currentItems.length} items`);
-                break;
+        for (let i = 0; i < maxScrolls; i++) {
+            const items = getMessageItems();
+            
+            // Check if there is any item not in processedHrefs
+            const hasNew = items.some(item => item && item.href && !processedHrefs.includes(item.href));
+            if (hasNew) {
+                console.log(`✅ Đã tìm thấy người mới sau ${i} lần cuộn.`);
+                return true;
             }
 
-            if (currentItems.length === lastCount) {
-                attempts++;
-                if (attempts >= 3) {
-                    console.log(`⚠️ Không thể load thêm items (đã có ${currentItems.length})`);
-                    break;
-                }
-            } else {
-                attempts = 0;
-                lastCount = currentItems.length;
-            }
-
-            // Scroll xuống
-            container.scrollTop = container.scrollHeight;
-
-            // Đợi load
-            await new Promise(resolve => setTimeout(resolve, 500));
+            container.scrollBy({ top: 1200, behavior: 'smooth' });
+            // Đợi load để React kịp render layout, tránh layout thrashing
+            await new Promise(resolve => setTimeout(resolve, 1500));
         }
+        
+        console.log(`⚠️ Không tìm thấy thêm người mới sau ${maxScrolls} lần cuộn.`);
+        return false;
     }
 
     // Scroll item vào view
@@ -581,27 +607,37 @@ if (window.__tinderAutoToolLoaded) {
         msgMinDelay = minDelay;
         msgMaxDelay = maxDelay;
 
-        // Scroll để load tất cả items trước
-        const targetCount = count > 0 ? count : 100;
-        scrollToLoadMoreItems(targetCount).then(() => {
-            const items = getMessageItems();
-            if (items.length === 0) {
-                chrome.runtime.sendMessage({ action: 'error', message: 'Không tìm thấy danh sách tin nhắn!' });
-                return;
-            }
+        const items = getMessageItems();
+        if (items.length === 0) {
+            chrome.runtime.sendMessage({ action: 'error', message: 'Không tìm thấy danh sách tin nhắn!' });
+            return;
+        }
 
-            // Limit count if specified
-            totalMessages = count > 0 ? Math.min(count, items.length) : items.length;
-            currentMessageIndex = 0;
-            isSendingMessages = true;
+        // Limit count if specified. If count === 0 (all), use a large boundary.
+        totalMessages = count > 0 ? count : 9999;
+        currentMessageIndex = 0;
+        processedHrefs = [];
+        isSendingMessages = true;
 
-            console.log(`📨 Bắt đầu gửi tin nhắn cho ${totalMessages} người`);
-            console.log(`📋 Mode: ${useRandomQuotes ? 'Random quotes (' + quotesArray.length + ' câu)' : 'Single message'}`);
-            console.log(`📋 Danh sách: `, items.map(i => i.getAttribute('aria-label')));
+        // Lưu trạng thái để phục hồi sau khi reload
+        const state = {
+            isRunning: true,
+            messageToSend,
+            quotesArray,
+            useRandomQuotes,
+            totalMessages,
+            currentMessageIndex: 0,
+            msgMinDelay,
+            msgMaxDelay,
+            processedHrefs: []
+        };
+        StorageHelper.set({ bulkMsgState: state });
 
-            // Bắt đầu với item đầu tiên
-            clickAndSendMessage();
-        });
+        console.log(`📨 Bắt đầu gửi tin nhắn cho ${totalMessages === 9999 ? 'tất cả' : totalMessages} người`);
+        console.log(`📋 Mode: ${useRandomQuotes ? 'Random quotes (' + quotesArray.length + ' câu)' : 'Single message'}`);
+
+        // Bắt đầu với item đầu tiên ngay lập tức, scroll động thay vì load hàng loạt lúc bắt đầu
+        clickAndSendMessage();
 
         return true;
     }
@@ -620,25 +656,14 @@ if (window.__tinderAutoToolLoaded) {
             return;
         }
 
-        // Lấy lại danh sách items (vì DOM có thể thay đổi)
-        const items = getMessageItems();
-
-        if (currentMessageIndex >= items.length) {
-            // Thử scroll để load thêm items
-            console.log('📜 Đang scroll để load thêm items...');
-            scrollToLoadMoreItems(currentMessageIndex + 10).then(() => {
-                const newItems = getMessageItems();
-                if (currentMessageIndex >= newItems.length) {
-                    console.log('⚠️ Hết items trong danh sách');
-                    stopBulkMessage();
-                    chrome.runtime.sendMessage({ action: 'completed', total: currentMessageIndex });
-                    return;
-                }
-                // Tiếp tục với item mới
-                processCurrentItem();
-            });
-            return;
-        }
+        // Lưu tiến trình
+        StorageHelper.get(['bulkMsgState']).then((res) => {
+            if (res.bulkMsgState && res.bulkMsgState.isRunning) {
+                res.bulkMsgState.currentMessageIndex = currentMessageIndex;
+                res.bulkMsgState.processedHrefs = processedHrefs;
+                StorageHelper.set({ bulkMsgState: res.bulkMsgState });
+            }
+        }).catch(e => console.error("Lỗi lưu tiến trình:", e));
 
         processCurrentItem();
     }
@@ -646,14 +671,36 @@ if (window.__tinderAutoToolLoaded) {
     // Xử lý item hiện tại
     function processCurrentItem() {
         const items = getMessageItems();
-        const currentItem = items[currentMessageIndex];
+        
+        // CƠ CHẾ CHỐNG DUPLICATE TUYỆT ĐỐI KHÔNG DỰA VÀO INDEX THAY ĐỔI
+        let targetItem = null;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i] && items[i].href && !processedHrefs.includes(items[i].href)) {
+                targetItem = items[i];
+                break;
+            }
+        }
 
-        if (!currentItem) {
-            console.log('❌ Không tìm thấy item hiện tại');
-            currentMessageIndex++;
-            scheduleNextPerson();
+        if (!targetItem) {
+            console.log('📜 Hết người mới hiển thị trên màn hình, đang cuộn để tìm thêm...');
+            
+            scrollToFindNewPerson(15).then((foundNew) => {
+                if (!foundNew) {
+                    console.log('⚠️ Không tìm thấy người mới nào nữa. Đã hết danh sách.');
+                    stopBulkMessage();
+                    chrome.runtime.sendMessage({ action: 'completed', total: currentMessageIndex });
+                    return;
+                }
+                
+                // Nếu tìm thấy, tiếp tục chạy lại để xử lý
+                setTimeout(processCurrentItem, 1000);
+            });
             return;
         }
+
+        const currentItem = targetItem;
+        // Đánh dấu là ĐÃ TIN NHẮN (ngay lập tức) để tránh bị duplicate vĩnh viễn (kể cả khi DOM bị xáo trộn hoặc reload)
+        processedHrefs.push(currentItem.href);
 
         const name = currentItem.getAttribute('aria-label') || `Person ${currentMessageIndex + 1}`;
 
@@ -738,8 +785,29 @@ if (window.__tinderAutoToolLoaded) {
             return;
         }
 
-        const delay = getRandomDelay(msgMinDelay, msgMaxDelay);
-        console.log(`⏱️ Chờ ${delay / 1000}s rồi click người tiếp theo (${currentMessageIndex + 1}/${totalMessages})...`);
+        let delay = getRandomDelay(msgMinDelay, msgMaxDelay);
+        
+        // Anti-crash mechanism: every 10 messages, clear React memory by navigating to empty messages route
+        if (currentMessageIndex > 0 && currentMessageIndex % 10 === 0) {
+            console.log(`🧹 Đã gửi ${currentMessageIndex} tin nhắn. Đang CHUYỂN HƯỚNG để dọn dẹp bộ nhớ chống Crash (OOM)...`);
+            
+            // LƯU LẠI INDEX MỚI TRƯỚC KHI RELOAD ĐỂ TRÁNH TRÙNG LẶP TIN NHẮN (DUPLICATE BUG)
+            StorageHelper.get(['bulkMsgState']).then((res) => {
+                if (res.bulkMsgState && res.bulkMsgState.isRunning) {
+                    res.bulkMsgState.currentMessageIndex = currentMessageIndex;
+                    res.bulkMsgState.processedHrefs = processedHrefs;
+                    StorageHelper.set({ bulkMsgState: res.bulkMsgState });
+                }
+            }).catch(e => console.error("Lỗi lưu trước khi reload:", e));
+
+            setTimeout(() => {
+                // Reload page to clear React memory without losing the current message thread state
+                window.location.reload();
+            }, 3000);
+            return; // Script sẽ dừng chờ page xả bộ nhớ và auto-resume sau
+        }
+
+        console.log(`⏱️ Chờ ${delay / 1000}s rồi click người tiếp theo (${currentMessageIndex + 1}/${totalMessages === 9999 ? 'Tất cả' : totalMessages})...`);
 
         messageTimeout = setTimeout(() => {
             console.log('🔄 Bắt đầu xử lý người tiếp theo...');
@@ -754,7 +822,63 @@ if (window.__tinderAutoToolLoaded) {
             clearTimeout(messageTimeout);
             messageTimeout = null;
         }
+        
+        // Hủy trạng thái chạy
+        StorageHelper.get(['bulkMsgState']).then((res) => {
+            if (res.bulkMsgState) {
+                res.bulkMsgState.isRunning = false;
+                StorageHelper.set({ bulkMsgState: res.bulkMsgState });
+            }
+        }).catch(e => console.error("Lỗi hủy trạng thái:", e));
     }
+
+    // ========== AUTO RESUME CHỐNG CRASH ==========
+    async function checkAndResumeBulkMessage() {
+        try {
+            const res = await StorageHelper.get(['bulkMsgState']);
+            const state = res.bulkMsgState;
+            
+            if (state && state.isRunning) {
+                console.log("🔄 Phát hiện phiên gửi tin nhắn đang dang dở. Đang khôi phục...");
+                
+                // Khôi phục bộ đệm
+                isSendingMessages = true;
+                messageToSend = state.messageToSend;
+                quotesArray = state.quotesArray;
+                useRandomQuotes = state.useRandomQuotes;
+                totalMessages = state.totalMessages;
+                currentMessageIndex = state.currentMessageIndex;
+                msgMinDelay = state.msgMinDelay;
+                msgMaxDelay = state.msgMaxDelay;
+                processedHrefs = state.processedHrefs || [];
+                
+                // Cố gắng tìm phần tử container. Nếu chưa có, đợi thêm 1 chút.
+                const tryResume = async (retries = 0) => {
+                    const list = getMessageItems();
+                    if (list.length === 0 && retries < 5) {
+                        setTimeout(() => tryResume(retries + 1), 2000);
+                        return;
+                    }
+
+                    console.log(`▶️ Tìm đến vị trí người chưa được nhắn tin...`);
+                    if (currentMessageIndex > 0) {
+                        // Cuộn sâu hơn để bắt kịp index hiện tại, dự trù mỗi cuộn 1200px ~ 15-20 người
+                        const requiredScrolls = Math.max(5, Math.ceil(currentMessageIndex / 10));
+                        await scrollToFindNewPerson(requiredScrolls + 10);
+                    }
+                    console.log("▶️ Đang tiếp tục gửi tin...");
+                    clickAndSendMessage();
+                };
+
+                setTimeout(tryResume, 8000); // Khởi động kiểm tra resume sau 8s
+            }
+        } catch (e) {
+            console.error('❌ Lỗi khi tự động resume:', e);
+        }
+    }
+
+    // Kích hoạt kiểm tra khôi phục khi trang tải xong
+    setTimeout(checkAndResumeBulkMessage, 4000);
 
     // ========== MESSAGE LISTENER ==========
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
