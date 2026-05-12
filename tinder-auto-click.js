@@ -981,6 +981,13 @@ if (window.__tinderAutoToolLoaded) {
   // ========== AUTO RESUME CHỐNG CRASH ==========
   async function checkAndResumeSession() {
     try {
+      // Defensive: ensure StorageHelper is available
+      if (typeof StorageHelper === 'undefined') {
+        console.warn('⚠️ StorageHelper not defined, retrying in 2s...');
+        setTimeout(checkAndResumeSession, 2000);
+        return;
+      }
+
       const res = await StorageHelper.get(["bulkMsgState"]);
       const state = res.bulkMsgState;
 
