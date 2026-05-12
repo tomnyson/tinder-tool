@@ -464,8 +464,7 @@ if (window.__tinderAutoToolLoaded) {
   let msgMinDelay = 3000;
   let msgMaxDelay = 5000;
   let processedHrefs = [];
-  let messageTargetQueue = [];
-  const MESSAGE_PAGE_RELOAD_INTERVAL = 10;
+  const MESSAGE_PAGE_RELOAD_INTERVAL = 40;
 
   // ========== STORAGE HELPER ==========
   // StorageHelper is loaded from lib/storage-helper.js (declared globally before this script).
@@ -657,6 +656,13 @@ if (window.__tinderAutoToolLoaded) {
     }
   }
 
+  async function scrollMessageListToTop() {
+    const container = getMessageListContainer();
+    if (!container) return;
+    container.scrollTo({ top: 0, behavior: "auto" });
+    await new Promise((resolve) => setTimeout(resolve, 600));
+  }
+
   function getTargetName(item) {
     return (
       item?.getAttribute("aria-label") ||
@@ -665,18 +671,10 @@ if (window.__tinderAutoToolLoaded) {
     );
   }
 
-  function syncProcessedHrefsFromQueue() {
-    processedHrefs = messageTargetQueue
-      .slice(0, currentMessageIndex)
-      .map((target) => target.href)
-      .filter(Boolean);
-  }
-
   async function persistBulkMessageState(extra = {}) {
     const result = await StorageHelper.get(["bulkMsgState"]);
     if (!result.bulkMsgState || !result.bulkMsgState.isRunning) return;
 
-    syncProcessedHrefsFromQueue();
     const nextState = {
       ...result.bulkMsgState,
       currentMessageIndex,
@@ -684,7 +682,6 @@ if (window.__tinderAutoToolLoaded) {
       msgMinDelay,
       msgMaxDelay,
       processedHrefs,
-      messageTargetQueue,
       ...extra,
     };
     await StorageHelper.set({ bulkMsgState: nextState });
@@ -708,119 +705,26 @@ if (window.__tinderAutoToolLoaded) {
     }, 1500);
   }
 
-  async function rebuildMessageTargetQueue(limit = 0) {
-    const refreshedQueue = await collectAllMessageTargets(limit);
-    if (!Array.isArray(refreshedQueue) || refreshedQueue.length === 0) {
-      return null;
-    }
-
-    messageTargetQueue = refreshedQueue;
-    totalMessages = refreshedQueue.length;
-    syncProcessedHrefsFromQueue();
-    await persistBulkMessageState();
-    return refreshedQueue;
-  }
-
-  async function collectAllMessageTargets(limit = 0) {
+  async function ensureNextUnprocessedItemVisible() {
     const container = getMessageListContainer();
-    if (!container) {
-      console.log(
-        "⚠️ Không tìm thấy container message list để quét toàn bộ danh sách.",
-      );
-      return [];
-    }
+    if (!container) return null;
 
-    const collected = [];
-    const seen = new Set();
     let stagnantRounds = 0;
-    let bottomConfirmations = 0;
     let lastVisibleSignature = "";
 
-    while (true) {
+    for (let attempt = 0; attempt < 200; attempt++) {
       const items = getMessageItems();
-      items.forEach((item) => {
-        if (!item?.href || seen.has(item.href)) return;
-        seen.add(item.href);
-        collected.push({
-          href: item.href,
-          name: getTargetName(item),
-        });
-      });
-
-      if (limit > 0 && collected.length >= limit) {
-        console.log(`✅ Đã quét đủ ${limit} người từ danh sách message.`);
-        return collected.slice(0, limit);
+      
+      for (const item of items) {
+        if (item && item.href && !processedHrefs.includes(item.href)) {
+          return item;
+        }
       }
 
       const visibleSignature = items
         .map((item) => item?.href || "")
         .filter(Boolean)
         .join("|");
-      const reachedBottom =
-        container.scrollTop + container.clientHeight >=
-        container.scrollHeight - 2;
-      if (reachedBottom) {
-        bottomConfirmations =
-          visibleSignature === lastVisibleSignature
-            ? bottomConfirmations + 1
-            : 1;
-        if (bottomConfirmations >= 3) {
-          console.log(
-            `✅ Quét xong toàn bộ danh sách message: ${collected.length} người.`,
-          );
-          return collected;
-        }
-      } else {
-        bottomConfirmations = 0;
-      }
-
-      const beforeScrollTop = container.scrollTop;
-      container.scrollBy({
-        top: Math.max(container.clientHeight * 0.9, 800),
-        behavior: "auto",
-      });
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-
-      if (
-        container.scrollTop === beforeScrollTop &&
-        visibleSignature === lastVisibleSignature
-      ) {
-        stagnantRounds++;
-        if (stagnantRounds >= 3) {
-          console.log(
-            `⚠️ Scroll không tiến triển thêm. Dùng danh sách đã quét được: ${collected.length} người.`,
-          );
-          return collected;
-        }
-      } else {
-        stagnantRounds = 0;
-      }
-
-      lastVisibleSignature = visibleSignature;
-    }
-  }
-
-  async function scrollMessageListToTop() {
-    const container = getMessageListContainer();
-    if (!container) return;
-    container.scrollTo({ top: 0, behavior: "auto" });
-    await new Promise((resolve) => setTimeout(resolve, 600));
-  }
-
-  function findMessageItemByHref(targetHref) {
-    return getMessageItems().find((item) => item?.href === targetHref) || null;
-  }
-
-  async function ensureMessageItemVisible(targetHref) {
-    const container = getMessageListContainer();
-    if (!container) return null;
-
-    let stagnantRounds = 0;
-    for (let attempt = 0; attempt < 200; attempt++) {
-      const item = findMessageItemByHref(targetHref);
-      if (item) {
-        return item;
-      }
 
       const beforeScrollTop = container.scrollTop;
       container.scrollBy({
@@ -829,14 +733,20 @@ if (window.__tinderAutoToolLoaded) {
       });
       await new Promise((resolve) => setTimeout(resolve, 900));
 
-      if (container.scrollTop === beforeScrollTop) {
+      if (
+        container.scrollTop === beforeScrollTop &&
+        visibleSignature === lastVisibleSignature
+      ) {
         stagnantRounds++;
         if (stagnantRounds >= 3) {
+          console.log("⚠️ Đã cuộn đến đáy nhưng không tìm thấy item mới.");
           break;
         }
       } else {
         stagnantRounds = 0;
       }
+
+      lastVisibleSignature = visibleSignature;
     }
 
     return null;
@@ -888,17 +798,11 @@ if (window.__tinderAutoToolLoaded) {
 
     const items = getMessageItems();
     if (items.length === 0) {
-      chrome.runtime.sendMessage({ action: "error", message: "Kh\u00f4ng t\u00ecm th\u1ea5y danh s\u00e1ch tin nh\u1eafn!" });
-      return { started: false, error: "Kh\u00f4ng t\u00ecm th\u1ea5y danh s\u00e1ch tin nh\u1eafn!" };
+      chrome.runtime.sendMessage({ action: "error", message: "Không tìm thấy danh sách tin nhắn!" });
+      return { started: false, error: "Không tìm thấy danh sách tin nhắn!" };
     }
 
-    messageTargetQueue = await collectAllMessageTargets(count > 0 ? count : 0);
-    if (messageTargetQueue.length === 0) {
-      chrome.runtime.sendMessage({ action: "error", message: "Kh\u00f4ng qu\u00e9t \u0111\u01b0\u1ee3c danh s\u00e1ch ng\u01b0\u1eddi c\u1ea7n nh\u1eafn tin!" });
-      return { started: false, error: "Kh\u00f4ng qu\u00e9t \u0111\u01b0\u1ee3c danh s\u00e1ch ng\u01b0\u1eddi c\u1ea7n nh\u1eafn tin!" };
-    }
-
-    totalMessages = messageTargetQueue.length;
+    totalMessages = count > 0 ? count : 9999;
     currentMessageIndex = 0;
     processedHrefs = [];
     isSendingMessages = true;
@@ -915,7 +819,6 @@ if (window.__tinderAutoToolLoaded) {
       msgMinDelay,
       msgMaxDelay,
       processedHrefs: [],
-      messageTargetQueue,
       ...(isAI && {
         openRouterApiKey: aiConfig.apiKey,
         aiSystemPrompt: aiConfig.systemPrompt,
@@ -925,7 +828,7 @@ if (window.__tinderAutoToolLoaded) {
     };
     await StorageHelper.set({ bulkMsgState: state });
 
-    console.log(`\ud83d\udce8 B\u1eaft \u0111\u1ea7u g\u1eedi ${isAI ? "AI" : "bulk"} tin nh\u1eafn cho ${totalMessages} ng\u01b0\u1eddi`);
+    console.log(`📩 Bắt đầu gửi ${isAI ? "AI" : "bulk"} tin nhắn...`);
 
     const resolver = isAI
       ? async (index, name) => {
@@ -934,7 +837,7 @@ if (window.__tinderAutoToolLoaded) {
             aiConfig.apiKey, aiConfig.systemPrompt, aiConfig.userPrompt, aiConfig.model, profile,
           );
           if (!result.success) {
-            console.error("[AI] L\u1ed7i t\u1ea1o tin nh\u1eafn:", result.error);
+            console.error("[AI] Lỗi tạo tin nhắn:", result.error);
             return null;
           }
           return result.message;
@@ -942,7 +845,7 @@ if (window.__tinderAutoToolLoaded) {
       : async (index) => getMessageForPerson(index);
 
     clickAndSendMessage(resolver);
-    return { started: true, totalCollected: totalMessages };
+    return { started: true, totalCollected: totalMessages === 9999 ? "Tất cả" : totalMessages };
   }
 
 
@@ -966,37 +869,19 @@ if (window.__tinderAutoToolLoaded) {
 
   // Xử lý item hiện tại — resolver là async (index, name) => string
   async function processCurrentItemUnified(resolver) {
-    const target = messageTargetQueue[currentMessageIndex];
-    if (!target?.href) {
-      console.log("⚠️ Queue không còn target hợp lệ.");
+    let currentItem = await ensureNextUnprocessedItemVisible();
+    if (!currentItem) {
+      console.log("✅ Không còn người nào để nhắn tin hoặc đã cuộn đến cuối.");
       stopBulkMessage();
       chrome.runtime.sendMessage({ action: "completed", total: currentMessageIndex });
       return;
     }
 
-    let currentItem = findMessageItemByHref(target.href);
-    if (!currentItem) currentItem = await ensureMessageItemVisible(target.href);
-    if (!currentItem) {
-      const rebuiltQueue = await rebuildMessageTargetQueue(totalMessages > 0 ? totalMessages : 0);
-      if (rebuiltQueue?.some((item) => item.href === target.href)) {
-        await scrollMessageListToTop();
-        currentItem = findMessageItemByHref(target.href) ||
-          await ensureMessageItemVisible(target.href);
-      }
-    }
-    if (!currentItem) {
-      console.log(`⚠️ Không tìm thấy target sau khi quét queue: ${target.href}`);
-      currentMessageIndex++;
-      syncProcessedHrefsFromQueue();
-      await persistBulkMessageState();
-      chrome.runtime.sendMessage({ action: "updateProgress", current: currentMessageIndex, total: totalMessages });
-      scheduleNextPerson(resolver);
-      return;
-    }
-
-    const name = target.name || getTargetName(currentItem) || `Person ${currentMessageIndex + 1}`;
-    console.log(`\n========================================`);
-    console.log(`📩 [${currentMessageIndex + 1}/${totalMessages}] Đang xử lý: ${name}`);
+    const targetHref = currentItem.href;
+    const name = getTargetName(currentItem) || `Person ${currentMessageIndex + 1}`;
+    console.log(`
+========================================`);
+    console.log(`📩 [${currentMessageIndex + 1}/${totalMessages === 9999 ? "Tất cả" : totalMessages}] Đang xử lý: ${name}`);
     console.log(`========================================`);
 
     scrollItemIntoView(currentItem);
@@ -1008,8 +893,8 @@ if (window.__tinderAutoToolLoaded) {
         const textarea = document.querySelector(TEXTAREA_SELECTOR);
         if (!textarea) {
           console.log("❌ Không tìm thấy textarea, bỏ qua người này");
+          processedHrefs.push(targetHref);
           currentMessageIndex++;
-          syncProcessedHrefsFromQueue();
           await persistBulkMessageState();
           chrome.runtime.sendMessage({ action: "updateProgress", current: currentMessageIndex, total: totalMessages });
           scheduleNextPerson(resolver);
@@ -1019,8 +904,8 @@ if (window.__tinderAutoToolLoaded) {
         const currentMessage = await resolver(currentMessageIndex, name);
         if (!currentMessage) {
           console.log("❌ Không lấy được tin nhắn từ resolver, bỏ qua người này");
+          processedHrefs.push(targetHref);
           currentMessageIndex++;
-          syncProcessedHrefsFromQueue();
           await persistBulkMessageState();
           chrome.runtime.sendMessage({ action: "updateProgress", current: currentMessageIndex, total: totalMessages });
           scheduleNextPerson(resolver);
@@ -1042,8 +927,8 @@ if (window.__tinderAutoToolLoaded) {
             console.log("❌ Không tìm thấy nút SEND");
           }
 
+          processedHrefs.push(targetHref);
           currentMessageIndex++;
-          syncProcessedHrefsFromQueue();
           await persistBulkMessageState();
           chrome.runtime.sendMessage({ action: "updateProgress", current: currentMessageIndex, total: totalMessages });
           scheduleNextPerson(resolver);
@@ -1051,7 +936,6 @@ if (window.__tinderAutoToolLoaded) {
       }, 2000);
     }, 300);
   }
-
 
   // Lên lịch xử lý người tiếp theo — resolver được truyền lại cho vòng lặp tiếp theo
   function scheduleNextPerson(resolver) {
@@ -1108,14 +992,13 @@ if (window.__tinderAutoToolLoaded) {
       messageToSend = state.messageToSend || "";
       quotesArray = Array.isArray(state.quotesArray) ? state.quotesArray : [];
       useRandomQuotes = state.useRandomQuotes || false;
-      totalMessages = state.totalMessages;
+      totalMessages = state.totalMessages || 9999;
       currentMessageIndex = state.currentMessageIndex || 0;
       msgMinDelay = state.msgMinDelay || 3000;
       msgMaxDelay = state.msgMaxDelay || 5000;
-      messageTargetQueue = Array.isArray(state.messageTargetQueue) ? state.messageTargetQueue : [];
-      syncProcessedHrefsFromQueue();
+      processedHrefs = Array.isArray(state.processedHrefs) ? state.processedHrefs : [];
 
-      console.log(`📋 Đã khôi phục: Mode AI=${state.aiMode}, index=${currentMessageIndex}, processed=${processedHrefs.length}, queue=${messageTargetQueue.length}`);
+      console.log(`📋 Đã khôi phục: Mode AI=${state.aiMode}, index=${currentMessageIndex}, processed=${processedHrefs.length}`);
 
       const tryResume = async (retries = 0) => {
         const list = getMessageItems();
@@ -1125,12 +1008,6 @@ if (window.__tinderAutoToolLoaded) {
           return;
         }
 
-        if (messageTargetQueue.length === 0) {
-          messageTargetQueue = await collectAllMessageTargets(totalMessages > 0 ? totalMessages : 0);
-          totalMessages = messageTargetQueue.length;
-          syncProcessedHrefsFromQueue();
-          await persistBulkMessageState();
-        }
         await scrollMessageListToTop();
         console.log("▶️ Đang tiếp tục gửi tin...");
         
