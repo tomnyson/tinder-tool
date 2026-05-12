@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tinder Auto Tool</title>
+  <title>Tinder matches</title>
   <style>
     *, *::before, *::after {
       box-sizing: border-box;
@@ -18,11 +18,11 @@
       --bg-input: #1a1613;
       --bg-input-focus: #201c18;
       --border: #342e28;
-      --border-focus: #e8604c;
-      --accent: #e8604c;
-      --accent-hover: #d4513f;
-      --accent-dim: rgba(232, 96, 76, 0.12);
-      --accent-glow: rgba(232, 96, 76, 0.25);
+      --border-focus: #ff2358;
+      --accent: #ff2358;
+      --accent-hover: #e11f4e;
+      --accent-dim: rgba(255, 35, 88, 0.12);
+      --accent-glow: rgba(255, 35, 88, 0.25);
       --gold: #f5a623;
       --gold-dim: rgba(245, 166, 35, 0.12);
       --green: #4caf7d;
@@ -40,7 +40,7 @@
       --radius-md: 10px;
       --radius-lg: 14px;
       --shadow-card: 0 2px 12px rgba(0,0,0,0.35);
-      --shadow-btn: 0 4px 14px rgba(232,96,76,0.30);
+      --shadow-btn: 0 4px 14px rgba(255,35,88,0.3);
       --transition: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
@@ -63,10 +63,10 @@
     }
 
     .header-icon {
-      width: 36px;
-      height: 36px;
-      background: var(--accent);
+      width: 45px;
+      height: 45px;
       border-radius: 50%;
+      background: var(--accent);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -187,6 +187,19 @@
       margin-bottom: 5px;
     }
 
+    .field-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 5px;
+    }
+
+    .field-header .field-label {
+      margin-bottom: 0;
+      flex: 1;
+    }
+
     input[type="number"],
     input[type="text"],
     input[type="password"],
@@ -261,6 +274,95 @@
       user-select: none;
     }
 
+    /* ---- MESSAGE SOURCE SWITCH ---- */
+    .send-mode-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .send-mode-option {
+      min-height: 58px;
+      padding: 8px 6px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--bg-input);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all var(--transition);
+      font-family: inherit;
+    }
+
+    .send-mode-option svg {
+      width: 15px;
+      height: 15px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .send-mode-option span {
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+
+    .send-mode-option:hover {
+      border-color: var(--text-muted);
+      color: var(--text-secondary);
+      background: var(--bg-card-hover);
+    }
+
+    .send-mode-option.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-dim);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .source-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 9px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--bg-input);
+      color: var(--text-secondary);
+      font-size: 10px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .source-pill::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+
+    .ai-mode-note {
+      display: none;
+      padding: 10px 11px;
+      border: 1px solid rgba(91,156,246,0.22);
+      border-radius: var(--radius-md);
+      background: var(--blue-dim);
+      color: var(--text-primary);
+      font-size: 12px;
+      line-height: 1.45;
+      margin-bottom: 10px;
+    }
+
     /* ---- DELAY INPUTS ---- */
     .delay-row {
       display: flex;
@@ -310,7 +412,7 @@
     .btn-primary:hover {
       background: var(--accent-hover);
       transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(232,96,76,0.40);
+      box-shadow: 0 6px 20px rgba(255,35,88,0.4);
     }
 
     .btn-primary:active {
@@ -352,17 +454,23 @@
     .btn-ai {
       background: var(--accent-dim);
       color: var(--accent);
-      border: 1.5px solid rgba(232,96,76,0.2);
+      border: 1.5px solid rgba(255,35,88,0.2);
     }
 
     .btn-ai:hover {
-      background: rgba(232,96,76,0.2);
+      background: rgba(255,35,88,0.2);
     }
 
     .btn-sm {
       padding: 7px 12px;
       font-size: 11px;
       font-weight: 600;
+    }
+
+    .btn-inline {
+      width: auto;
+      padding: 6px 10px;
+      flex-shrink: 0;
     }
 
     .btn-row {
@@ -610,7 +718,7 @@
     .spinner {
       width: 14px;
       height: 14px;
-      border: 2px solid rgba(232,96,76,0.2);
+      border: 2px solid rgba(255,35,88,0.2);
       border-top-color: var(--accent);
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
@@ -802,6 +910,17 @@
       color: var(--text-muted);
     }
 
+    .inline-save-status {
+      display: none;
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--green);
+    }
+
+    .inline-save-status.error {
+      color: var(--red);
+    }
+
     .saved-actions {
       display: flex;
       align-items: center;
@@ -896,10 +1015,10 @@
   <!-- HEADER -->
   <div class="header">
     <div class="header-icon">
-      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+     <img src="icon128.png" alt="Tinder matches" width="45" height="45">
     </div>
     <div class="header-text">
-      <h1 data-i18n="app.title">Tinder Auto Tool</h1>
+      <h1 data-i18n="app.title">Tinder matches</h1>
       <p data-i18n="app.subtitle">Tự động gửi tin nhắn hàng loạt</p>
     </div>
     <div class="lang-switch" id="langSwitch" title="Switch language">
@@ -970,19 +1089,37 @@
 
     <!-- Send Mode -->
     <div class="section">
-      <div class="section-title">Chế độ gửi tin nhắn</div>
+      <div class="section-title" data-i18n="msg.sendMode">Chế độ gửi tin nhắn</div>
 
-      <div class="field">
-        <label class="checkbox-label">
-          <input type="checkbox" id="randomQuote">
-          <span data-i18n="msg.randomQuotes">Gửi câu châm ngôn ngẫu nhiên</span>
-        </label>
+      <div class="send-mode-grid" role="group" aria-label="Message source">
+        <button type="button" class="send-mode-option active" data-send-mode="fixed">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h12M4 18h8"/></svg>
+          <span data-i18n="msg.modeFixedShort">Tin viết</span>
+        </button>
+        <button type="button" class="send-mode-option" data-send-mode="random">
+          <svg viewBox="0 0 24 24"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
+          <span data-i18n="msg.modeRandomShort">Danh sách</span>
+        </button>
+        <button type="button" class="send-mode-option" data-send-mode="ai">
+          <svg viewBox="0 0 24 24"><path d="M12 2l1.8 5.5L19 9.3l-5.2 1.8L12 17l-1.8-5.9L5 9.3l5.2-1.8L12 2z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z"/></svg>
+          <span data-i18n="msg.modeAiShort">AI</span>
+        </button>
       </div>
+      <input type="checkbox" id="randomQuote" hidden>
+      <div class="source-pill" id="activeMessageSource" data-i18n="msg.sourceFixed">Nguồn: nội dung bên dưới</div>
+      <div class="ai-mode-note" id="aiBulkNote" data-i18n="msg.aiBulkNote">Nguồn: AI cá nhân hoá theo hồ sơ hiện tại.</div>
 
       <!-- Fixed message textarea -->
       <div class="field" id="singleMessageGroup">
-        <label class="field-label" data-i18n="msg.content">Nội dung tin nhắn</label>
+        <div class="field-header">
+          <label class="field-label" for="messageText" data-i18n="msg.content">Nội dung tin nhắn</label>
+          <button id="quickSaveMsgBtn" type="button" class="btn btn-sm btn-secondary btn-inline">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            <span data-i18n="msg.saveMessage">Lưu tin</span>
+          </button>
+        </div>
         <textarea id="messageText" placeholder="Nhập tin nhắn của bạn..." data-i18n-placeholder="msg.messagePlaceholder"></textarea>
+        <div id="quickSaveMsgStatus" class="inline-save-status" aria-live="polite"></div>
       </div>
 
       <!-- AI generation button in message tab -->
@@ -1134,7 +1271,7 @@ Chuc ban mot đêm ngu ngon va những giấc mo đẹp</textarea>
 
     <!-- API Key -->
     <div class="section">
-      <div class="section-title">OpenRouter API</div>
+      <div class="section-title" data-i18n="ai.apiSection">OpenRouter API</div>
 
       <div class="api-badge not-configured" id="apiKeyStatus">
         <div class="dot"></div>
@@ -1216,11 +1353,17 @@ Chuc ban mot đêm ngu ngon va những giấc mo đẹp</textarea>
       </div>
 
       <div class="btn-row">
+        <button id="savePromptBtn" class="btn btn-sm btn-primary">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          <span data-i18n="ai.savePrompts">Lưu Prompt</span>
+        </button>
         <button id="testAiGenerateBtn" class="btn btn-sm btn-ai">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 18a8 8 0 110-16 8 8 0 010 16zm-1-5h2v2h-2zm1.61-9.96a2.5 2.5 0 01.89 2.46h-1.78a1.5 1.5 0 00-1.78 1.33V15h2v1h-3.5a.5.5 0 010-1H11v-1.54a2.5 2.5 0 012.61-2.5z"/></svg>
           <span data-i18n="ai.testGenerate">Thử tạo tin nhắn</span>
         </button>
       </div>
+
+      <div id="promptSaveStatus" style="display:none; font-size:11px; margin-top:6px; padding:4px 8px; border-radius:6px;"></div>
 
       <div id="aiGenerating" style="display:none; align-items:center; gap:8px; padding:9px 11px; background:var(--accent-dim); border-radius:8px; margin-top:8px; font-size:12px; color:var(--accent);">
         <div class="spinner"></div>
@@ -1240,6 +1383,7 @@ Chuc ban mot đêm ngu ngon va những giấc mo đẹp</textarea>
   <div id="progress" style="font-size:20px; font-weight:800; color:var(--accent); text-align:center; margin-top:10px; font-variant-numeric:tabular-nums;"></div>
   <div id="status" class="status-text" style="display:none;"></div>
 
+  <script src="lib/storage-helper.js"></script>
   <script src="lib/i18n.js"></script>
   <script src="lib/openrouter.js"></script>
   <script src="popup.js"></script>

@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Tinder matches",
-    "version": "1.2",
+    "version": "1.5",
     "description": "Extension để tự động click vào gamepad icon trên trang Tinder, gửi tin nhắn hàng loạt, và tạo tin nhắn bằng AI OpenRouter",
     "action": {
         "default_popup": "popup.html",
@@ -30,6 +30,9 @@
                 "https://tinder.com/*"
             ],
             "js": [
+                "lib/storage-helper.js",
+                "lib/dom-helpers.js",
+                "lib/openrouter.js",
                 "tinder-auto-click.js"
             ],
             "run_at": "document_idle"

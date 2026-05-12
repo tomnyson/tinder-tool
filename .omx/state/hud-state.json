@@ -1,0 +1,5 @@
+{
+  "last_turn_at": "2026-05-12T14:32:49.256Z",
+  "turn_count": 33,
+  "last_agent_output": "## Bug Report\n\n**Symptom**: Popup throws `Uncaught ReferenceError: loadApiTransportStatus is not def"
+}

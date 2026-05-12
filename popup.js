@@ -26,6 +26,9 @@ const randomQuoteCheckbox = document.getElementById('randomQuote');
 const quotesListInput = document.getElementById('quotesList');
 const singleMessageGroup = document.getElementById('singleMessageGroup');
 const quotesGroup = document.getElementById('quotesGroup');
+const sendModeOptions = document.querySelectorAll('.send-mode-option');
+const activeMessageSourceEl = document.getElementById('activeMessageSource');
+const aiBulkNoteEl = document.getElementById('aiBulkNote');
 const timeBasedQuotesCheckbox = document.getElementById('timeBasedQuotes');
 const singleQuotesGroup = document.getElementById('singleQuotesGroup');
 const timeBasedQuotesGroup = document.getElementById('timeBasedQuotesGroup');
@@ -33,6 +36,8 @@ const morningQuotesInput = document.getElementById('morningQuotes');
 const noonQuotesInput = document.getElementById('noonQuotes');
 const eveningQuotesInput = document.getElementById('eveningQuotes');
 const currentTimeSlotEl = document.getElementById('currentTimeSlot');
+const MESSAGE_DRAFT_KEY = 'messageDraft';
+const MESSAGE_DRAFT_FALLBACK_KEY = 'tinder_ext_messageDraft';
 
 // AI mode toggle in Message panel
 let selectedAIMode = 'fixed';
@@ -64,17 +69,15 @@ if (modelSelect) {
 // Auto-save AI config helper
 async function saveAIConfig() {
   try {
-    const modelValue = modelSelect && modelSelect.value === 'custom'
-      ? (customModelInput ? customModelInput.value.trim() : '')
-      : (modelSelect ? modelSelect.value : 'google/gemini-2.5-flash');
-    await chrome.storage.local.set({
+    const modelValue = getSelectedModel();
+    await StorageHelper.set({
       openRouterApiKey: apiKeyInput.value.trim(),
       aiSystemPrompt: systemPromptInput.value.trim(),
       aiUserPrompt: userPromptInput.value.trim(),
       aiModel: modelValue
     });
   } catch (e) {
-    console.error('Lỗi saveAIConfig:', e);
+    console.error(i18n.t('ai.aiError') + ' saveAIConfig:', e);
   }
 }
 
@@ -89,15 +92,72 @@ if (customModelInput) {
   customModelInput.addEventListener('input', saveAIConfig);
 }
 
+if (systemPromptInput) {
+  systemPromptInput.addEventListener('input', debouncedSavePrompts);
+}
+
+if (userPromptInput) {
+  userPromptInput.addEventListener('input', debouncedSavePrompts);
+}
+
+// Debounced auto-save for prompt textareas
+let promptsDebounceTimer = null;
+function debouncedSavePrompts() {
+  clearTimeout(promptsDebounceTimer);
+  promptsDebounceTimer = setTimeout(() => {
+    saveAIConfig();
+  }, 1500);
+}
+
+let messageDraftDebounceTimer = null;
+
+async function saveMessageDraft(draftText) {
+  const value = typeof draftText === 'string' ? draftText : '';
+  await StorageHelper.set({ [MESSAGE_DRAFT_KEY]: value });
+}
+
+async function getActiveTab() {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  return tab || null;
+}
+
+async function loadMessageDraft() {
+  const result = await StorageHelper.get([MESSAGE_DRAFT_KEY]);
+  const saved = result[MESSAGE_DRAFT_KEY];
+  return typeof saved === 'string' ? saved : '';
+}
+
+function debouncedSaveMessageDraft() {
+  clearTimeout(messageDraftDebounceTimer);
+  messageDraftDebounceTimer = setTimeout(() => {
+    if (messageTextInput) {
+      void saveMessageDraft(messageTextInput.value);
+    }
+  }, 300);
+}
+
+if (messageTextInput) {
+  messageTextInput.addEventListener('input', debouncedSaveMessageDraft);
+}
+
+async function restoreMessageDraft() {
+  if (!messageTextInput) return;
+  const saved = await loadMessageDraft();
+  if (saved) {
+    messageTextInput.value = saved;
+  }
+}
+
+
 // Get current time slot
 function getCurrentTimeSlot() {
   const hour = new Date().getHours();
   if (hour >= 5 && hour < 11) {
-    return { slot: 'morning', label: 'Buổi sáng 🌅', emoji: '☀️' };
+    return { slot: 'morning', label: i18n.t('timeSlot.morning'), emoji: '☀️' };
   } else if (hour >= 11 && hour < 17) {
-    return { slot: 'noon', label: 'Buổi trưa 🌞', emoji: '🌞' };
+    return { slot: 'noon', label: i18n.t('timeSlot.noon'), emoji: '🌞' };
   } else {
-    return { slot: 'evening', label: 'Buổi tối 🌙', emoji: '🌙' };
+    return { slot: 'evening', label: i18n.t('timeSlot.evening'), emoji: '🌙' };
   }
 }
 
@@ -146,48 +206,94 @@ if (timeBasedQuotesCheckbox) {
 // Update time slot on load
 setTimeout(updateTimeSlotDisplay, 100);
 
-// Toggle random quote mode
-randomQuoteCheckbox.addEventListener('change', () => {
-  if (randomQuoteCheckbox.checked) {
-    singleMessageGroup.style.display = 'none';
-    quotesGroup.style.display = 'block';
-  } else {
-    singleMessageGroup.style.display = 'block';
-    quotesGroup.style.display = 'none';
+// Message source mode: keeps the visible Message tab and the saved AI mode in sync.
+function syncMessageModeUI(mode) {
+  const normalizedMode = ['fixed', 'random', 'ai'].includes(mode) ? mode : 'fixed';
+  const isRandom = normalizedMode === 'random';
+  const isAi = normalizedMode === 'ai';
+
+  if (randomQuoteCheckbox) {
+    randomQuoteCheckbox.checked = isRandom;
   }
+
+  if (singleMessageGroup) {
+    singleMessageGroup.style.display = normalizedMode === 'fixed' ? 'block' : 'none';
+  }
+
+  if (quotesGroup) {
+    quotesGroup.style.display = isRandom ? 'block' : 'none';
+  }
+
+  if (aiBulkNoteEl) {
+    aiBulkNoteEl.style.display = isAi ? 'block' : 'none';
+  }
+
+  if (activeMessageSourceEl) {
+    const sourceKey = normalizedMode === 'ai'
+      ? 'msg.sourceAi'
+      : normalizedMode === 'random'
+        ? 'msg.sourceRandom'
+        : 'msg.sourceFixed';
+    activeMessageSourceEl.setAttribute('data-i18n', sourceKey);
+    activeMessageSourceEl.textContent = i18n.t(sourceKey);
+  }
+
+  sendModeOptions.forEach(option => {
+    option.classList.toggle('active', option.dataset.sendMode === normalizedMode);
+  });
+}
+
+sendModeOptions.forEach(option => {
+  option.addEventListener('click', () => {
+    setAIMode(option.dataset.sendMode);
+  });
 });
+
+// Legacy hidden checkbox path, kept for compatibility with restored state/tests.
+if (randomQuoteCheckbox) {
+  randomQuoteCheckbox.addEventListener('change', () => {
+    setAIMode(randomQuoteCheckbox.checked ? 'random' : 'fixed');
+  });
+}
 
 // ========== SAVED MESSAGES ==========
 const savedMessagesListEl = document.getElementById('savedMessagesList');
 const savedMsgNameInput = document.getElementById('savedMsgNameInput');
 const saveMsgPresetBtn = document.getElementById('saveMsgPresetBtn');
 const savedMessagesSection = document.getElementById('savedMessagesSection');
+const quickSaveMsgBtn = document.getElementById('quickSaveMsgBtn');
+const quickSaveMsgStatus = document.getElementById('quickSaveMsgStatus');
 
 const MAX_SAVED = 20;
+let quickSaveStatusTimer = null;
 
 async function loadSavedMessages() {
-  const result = await chrome.storage.local.get(['savedMessages']);
-  return result.savedMessages || [];
+  try {
+    const result = await StorageHelper.get(['savedMessages']);
+    return result.savedMessages || [];
+  } catch (e) {
+    return [];
+  }
 }
 
 async function persistSavedMessages(messages) {
-  await chrome.storage.local.set({ savedMessages: messages });
+  await StorageHelper.set({ savedMessages: messages });
 }
 
 async function renderSavedMessages() {
   const messages = await loadSavedMessages();
   if (messages.length === 0) {
-    savedMessagesListEl.innerHTML = '<div class="saved-empty">Chua co mau tin nao</div>';
+    savedMessagesListEl.innerHTML = '<div class="saved-empty">' + i18n.t('msg.savedEmpty') + '</div>';
     return;
   }
 
   savedMessagesListEl.innerHTML = messages.map((msg, idx) => `
     <div class="saved-item" data-idx="${idx}">
       <div class="saved-item-body">
-        <div class="saved-item-name">${escapeHtml(msg.name || 'Khong co tieu de')}</div>
+        <div class="saved-item-name">${escapeHtml(msg.name || i18n.t('msg.noTitle'))}</div>
         <div class="saved-item-preview">${escapeHtml(msg.message || '')}</div>
       </div>
-      <button class="saved-item-delete" data-idx="${idx}" title="Xoa">
+      <button class="saved-item-delete" data-idx="${idx}" title="${i18n.t('msg.delete')}">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
@@ -212,15 +318,62 @@ async function renderSavedMessages() {
   });
 }
 
+function buildPresetName(message) {
+  const firstLine = message
+    .split('\n')
+    .map(line => line.trim())
+    .find(Boolean) || '';
+  const compact = firstLine.replace(/\s+/g, ' ');
+  if (compact.length <= 32) return compact;
+  return compact.slice(0, 32).trim() + '...';
+}
+
+function showQuickSaveStatus(message, type = 'success') {
+  if (!quickSaveMsgStatus) return;
+  clearTimeout(quickSaveStatusTimer);
+  quickSaveMsgStatus.textContent = message;
+  quickSaveMsgStatus.classList.toggle('error', type === 'error');
+  quickSaveMsgStatus.style.display = 'block';
+  quickSaveStatusTimer = setTimeout(() => {
+    quickSaveMsgStatus.style.display = 'none';
+    quickSaveMsgStatus.classList.remove('error');
+  }, 1800);
+}
+
+async function saveCurrentMessagePreset(options = {}) {
+  const { fallbackToMessageTitle = false } = options;
+  const message = messageTextInput.value.trim();
+
+  if (!message) {
+    messageTextInput.style.borderColor = 'var(--red)';
+    setTimeout(() => { messageTextInput.style.borderColor = ''; }, 1500);
+    throw new Error(i18n.t('msg.enterMessage'));
+  }
+
+  const enteredName = savedMsgNameInput ? savedMsgNameInput.value.trim() : '';
+  const name = enteredName || (fallbackToMessageTitle ? buildPresetName(message) : '');
+
+  const messages = await loadSavedMessages();
+  if (messages.length >= MAX_SAVED) {
+    messages.shift();
+  }
+  messages.push({ name, message });
+  await persistSavedMessages(messages);
+
+  if (savedMsgNameInput) {
+    savedMsgNameInput.value = '';
+  }
+  await renderSavedMessages();
+  return { name, message };
+}
+
 async function loadSavedPreset(idx) {
   const messages = await loadSavedMessages();
   const preset = messages[idx];
   if (!preset) return;
 
   messageTextInput.value = preset.message || '';
-  randomQuoteCheckbox.checked = false;
-  quotesGroup.style.display = 'none';
-  singleMessageGroup.style.display = 'block';
+  setAIMode('fixed');
 
   if (savedMessagesSection) savedMessagesSection.open = false;
   savedMsgNameInput.value = preset.name || '';
@@ -236,24 +389,22 @@ async function deleteSavedPreset(idx) {
 
 if (saveMsgPresetBtn) {
   saveMsgPresetBtn.addEventListener('click', async () => {
-    const name = savedMsgNameInput.value.trim();
-    const message = messageTextInput.value.trim();
-
-    if (!message) {
-      savedMsgNameInput.style.borderColor = 'var(--red)';
-      setTimeout(() => { savedMsgNameInput.style.borderColor = ''; }, 1500);
-      return;
+    try {
+      await saveCurrentMessagePreset();
+    } catch (e) {
+      showQuickSaveStatus(e.message, 'error');
     }
+  });
+}
 
-    const messages = await loadSavedMessages();
-    if (messages.length >= MAX_SAVED) {
-      messages.shift();
+if (quickSaveMsgBtn) {
+  quickSaveMsgBtn.addEventListener('click', async () => {
+    try {
+      await saveCurrentMessagePreset({ fallbackToMessageTitle: true });
+      showQuickSaveStatus(i18n.t('msg.savedOk'));
+    } catch (e) {
+      showQuickSaveStatus(e.message, 'error');
     }
-    messages.push({ name: name || '', message });
-    await persistSavedMessages(messages);
-
-    savedMsgNameInput.value = '';
-    await renderSavedMessages();
   });
 }
 
@@ -269,7 +420,7 @@ const quotesStatusEl = document.getElementById('quotesStatus');
 
 fetchQuotesBtn.addEventListener('click', async () => {
   fetchQuotesBtn.disabled = true;
-  fetchQuotesBtn.textContent = '⏳ Đang lấy...';
+  fetchQuotesBtn.textContent = '⏳ ' + i18n.t('msg.fetching');
   quotesStatusEl.textContent = '';
 
   try {
@@ -277,7 +428,7 @@ fetchQuotesBtn.addEventListener('click', async () => {
     const response = await fetch('https://zenquotes.io/api/quotes');
 
     if (!response.ok) {
-      throw new Error('API không phản hồi');
+      throw new Error(i18n.t('msg.apiNoResponse'));
     }
 
     const data = await response.json();
@@ -290,11 +441,11 @@ fetchQuotesBtn.addEventListener('click', async () => {
     const newQuotes = quotes.join('\n');
     quotesListInput.value = currentQuotes ? `${currentQuotes}\n${newQuotes}` : newQuotes;
 
-    quotesStatusEl.textContent = `✅ Đã thêm ${quotes.length} quotes!`;
+    quotesStatusEl.textContent = '✅ ' + i18n.t('msg.quotesAdded').replace('{n}', quotes.length);
     quotesStatusEl.style.color = '#4CAF50';
 
   } catch (error) {
-    console.error('Lỗi fetch quotes:', error);
+    console.error(i18n.t('ai.aiError') + ' fetch quotes:', error);
 
     // Fallback: thêm quotes tiếng Việt mặc định
     const fallbackQuotes = [
@@ -312,12 +463,11 @@ fetchQuotesBtn.addEventListener('click', async () => {
     const newQuotes = fallbackQuotes.join('\n');
     quotesListInput.value = currentQuotes ? `${currentQuotes}\n${newQuotes}` : newQuotes;
 
-    quotesStatusEl.textContent = `✅ Đã thêm ${fallbackQuotes.length} quotes (offline)`;
+    quotesStatusEl.textContent = '✅ ' + i18n.t('msg.quotesFallback').replace('{n}', fallbackQuotes.length);
     quotesStatusEl.style.color = '#FF9800';
   }
 
   fetchQuotesBtn.disabled = false;
-  fetchQuotesBtn.textContent = '🔄 Lấy quotes từ API';
 });
 
 // Common elements
@@ -345,16 +495,13 @@ async function sendMessageToTab(message) {
   // Đợi một chút để script load
   await new Promise(resolve => setTimeout(resolve, 300));
 
-  // Gửi message
-  return new Promise((resolve, reject) => {
-    chrome.tabs.sendMessage(tab.id, message, (response) => {
-      if (chrome.runtime.lastError) {
-        reject(new Error(chrome.runtime.lastError.message));
-      } else {
-        resolve(response);
-      }
-    });
-  });
+  // Gửi message (Promise-based overload for async responses)
+  try {
+    const response = await chrome.tabs.sendMessage(tab.id, message);
+    return response;
+  } catch (e) {
+    throw new Error(e.message || chrome.runtime.lastError?.message || 'Message failed');
+  }
 }
 
 // Update UI
@@ -375,7 +522,7 @@ startBtn.addEventListener('click', async () => {
     const minDelay = (parseFloat(minDelayInput.value) || 1) * 1000;
     const maxDelay = (parseFloat(maxDelayInput.value) || 3) * 1000;
 
-    statusEl.textContent = 'Dang ket noi...';
+    statusEl.textContent = i18n.t('msg.connecting');
     statusEl.style.display = 'block';
     statusEl.style.color = 'var(--text-secondary)';
 
@@ -388,16 +535,16 @@ startBtn.addEventListener('click', async () => {
 
     if (response?.started) {
       updateGamepadUI(true);
-      statusEl.textContent = 'Dang click gamepad...';
+      statusEl.textContent = i18n.t('swipe.running');
       statusEl.style.color = 'var(--green)';
       progressEl.style.display = 'block';
       progressEl.textContent = '0 / ' + clickCount;
     }
   } catch (e) {
     if (e.message === 'NOT_TINDER') {
-      statusEl.textContent = 'Vui long mo trang Tinder!';
+      statusEl.textContent = i18n.t('error.notTinder');
     } else {
-      statusEl.textContent = 'Loi: ' + e.message;
+      statusEl.textContent = i18n.t('error').replace('{msg}', e.message);
     }
     statusEl.style.color = 'var(--red)';
   }
@@ -408,12 +555,12 @@ stopBtn.addEventListener('click', async () => {
     const response = await sendMessageToTab({ action: 'stopAutoClick' });
     if (response?.stopped) {
       updateGamepadUI(false);
-      statusEl.textContent = 'Da dung!';
+      statusEl.textContent = i18n.t('msg.stopped');
       statusEl.style.color = 'var(--text-muted)';
       progressEl.style.display = 'none';
     }
   } catch (e) {
-    statusEl.textContent = 'Loi: ' + e.message;
+    statusEl.textContent = i18n.t('error').replace('{msg}', e.message);
     statusEl.style.color = 'var(--red)';
   }
 });
@@ -425,7 +572,9 @@ startMsgBtn.addEventListener('click', async () => {
     let quotes = [];
     let useRandomQuotes = false;
 
-    if (selectedAIMode === 'ai') {
+    const sendMode = ['fixed', 'random', 'ai'].includes(selectedAIMode) ? selectedAIMode : 'fixed';
+
+    if (sendMode === 'ai') {
       const result = await chrome.storage.local.get([
         'openRouterApiKey',
         'aiSystemPrompt',
@@ -444,7 +593,7 @@ startMsgBtn.addEventListener('click', async () => {
       const minDelay = (parseFloat(msgMinDelayInput.value) || 3) * 1000;
       const maxDelay = (parseFloat(msgMaxDelayInput.value) || 5) * 1000;
 
-      statusEl.textContent = 'Dang ket noi AI...';
+      statusEl.textContent = i18n.t('msg.connectingAi');
       statusEl.style.display = 'block';
       statusEl.style.color = 'var(--accent)';
 
@@ -465,18 +614,18 @@ startMsgBtn.addEventListener('click', async () => {
 
       if (response?.started) {
         updateMessageUI(true);
-        statusEl.textContent = 'Dang gui tin nhan AI...';
+        statusEl.textContent = i18n.t('msg.sendingAi');
         statusEl.style.color = 'var(--green)';
         progressEl.style.display = 'block';
-        progressEl.textContent = '0 / ' + (count || '?');
+        progressEl.textContent = '0 / ' + (response.totalCollected || count || '?');
       } else {
-        statusEl.textContent = 'Khong the bat dau!';
+        statusEl.textContent = response?.error || i18n.t('msg.cantStart');
         statusEl.style.color = 'var(--red)';
       }
       return;
     }
 
-    useRandomQuotes = randomQuoteCheckbox.checked;
+    useRandomQuotes = sendMode === 'random';
 
     if (useRandomQuotes) {
       const useTimeBased = timeBasedQuotesCheckbox && timeBasedQuotesCheckbox.checked;
@@ -491,7 +640,7 @@ startMsgBtn.addEventListener('click', async () => {
       }
 
       if (quotes.length === 0) {
-        statusEl.textContent = 'Vui long nhap it nhat 1 cau!';
+        statusEl.textContent = i18n.t('msg.notEnoughQuotes');
         statusEl.style.display = 'block';
         statusEl.style.color = 'var(--red)';
         return;
@@ -499,7 +648,7 @@ startMsgBtn.addEventListener('click', async () => {
     } else {
       message = messageTextInput.value.trim();
       if (!message) {
-        statusEl.textContent = 'Vui long nhap tin nhan!';
+        statusEl.textContent = i18n.t('msg.enterMessage');
         statusEl.style.display = 'block';
         statusEl.style.color = 'var(--red)';
         return;
@@ -510,7 +659,7 @@ startMsgBtn.addEventListener('click', async () => {
     const minDelay = (parseFloat(msgMinDelayInput.value) || 3) * 1000;
     const maxDelay = (parseFloat(msgMaxDelayInput.value) || 5) * 1000;
 
-    statusEl.textContent = 'Dang ket noi...';
+    statusEl.textContent = i18n.t('msg.connecting');
     statusEl.style.display = 'block';
     statusEl.style.color = 'var(--accent)';
 
@@ -526,19 +675,19 @@ startMsgBtn.addEventListener('click', async () => {
 
     if (response?.started) {
       updateMessageUI(true);
-      statusEl.textContent = 'Dang gui tin nhan...';
+      statusEl.textContent = i18n.t('msg.sending');
       statusEl.style.color = 'var(--green)';
       progressEl.style.display = 'block';
-      progressEl.textContent = '0 / ' + (count || '?');
+      progressEl.textContent = '0 / ' + (response.totalCollected || count || '?');
     } else {
-      statusEl.textContent = 'Khong the bat dau!';
+      statusEl.textContent = response?.error || i18n.t('msg.cantStart');
       statusEl.style.color = 'var(--red)';
     }
   } catch (e) {
     if (e.message === 'NOT_TINDER') {
-      statusEl.textContent = 'Vui long mo trang Tinder!';
+      statusEl.textContent = i18n.t('error.notTinder');
     } else {
-      statusEl.textContent = 'Loi: ' + e.message;
+      statusEl.textContent = i18n.t('error').replace('{msg}', e.message);
     }
     statusEl.style.color = 'var(--red)';
   }
@@ -549,12 +698,12 @@ stopMsgBtn.addEventListener('click', async () => {
     const response = await sendMessageToTab({ action: 'stopBulkMessage' });
     if (response?.stopped) {
       updateMessageUI(false);
-      statusEl.textContent = 'Da dung!';
+      statusEl.textContent = i18n.t('msg.stopped');
       statusEl.style.color = 'var(--text-muted)';
       progressEl.style.display = 'none';
     }
   } catch (e) {
-    statusEl.textContent = 'Loi: ' + e.message;
+    statusEl.textContent = i18n.t('error').replace('{msg}', e.message);
     statusEl.style.color = 'var(--red)';
   }
 });
@@ -612,7 +761,7 @@ async function generateSingleAIMessage() {
       statusEl.style.color = 'var(--green)';
       return response.message;
     } else {
-      const errMsg = response?.error || 'Khong nhan duoc phan hoi';
+      const errMsg = response?.error || i18n.t('msg.noResponse');
       showGenStatus(errMsg, 'error');
       statusEl.textContent = errMsg;
       statusEl.style.color = 'var(--red)';
@@ -621,8 +770,8 @@ async function generateSingleAIMessage() {
   } catch (e) {
     generateAiMsgBtn.disabled = false;
     generateAiMsgBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 18a8 8 0 110-16 8 8 0 010 16zm-1-5h2v2h-2zm1.61-9.96a2.5 2.5 0 01.89 2.46h-1.78a1.5 1.5 0 00-1.78 1.33V15h2v1h-3.5a.5.5 0 010-1H11v-1.54a2.5 2.5 0 012.61-2.5z"/></svg> <span>' + i18n.t('msg.aiGenerate') + '</span>';
-    showGenStatus('Loi: ' + e.message, 'error');
-    statusEl.textContent = 'Loi: ' + e.message;
+    showGenStatus(i18n.t('ai.aiError') + ' ' + e.message, 'error');
+    statusEl.textContent = i18n.t('ai.aiError') + ' ' + e.message;
     statusEl.style.color = 'var(--red)';
     return null;
   }
@@ -648,6 +797,8 @@ if (useAiMsgBtn) {
       if (messageTextInput) {
         messageTextInput.value = lastGeneratedMessage;
         messageTextInput.focus();
+        void saveMessageDraft(lastGeneratedMessage);
+        setAIMode('fixed');
       }
       generateAiPreview.style.display = 'none';
       generateAiStatus.style.display = 'none';
@@ -672,9 +823,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'completed') {
     updateGamepadUI(false);
     updateMessageUI(false);
-    statusEl.textContent = 'Hoan thanh!';
+    statusEl.textContent = i18n.t('swipe.complete');
     statusEl.style.display = 'none';
-    progressEl.textContent = `Da xu ly ${request.total} muc`;
+    progressEl.textContent = i18n.t('msg.processed').replace('{n}', request.total);
   }
 
   if (request.action === 'error') {
@@ -693,13 +844,13 @@ const historyCountEl = document.getElementById('historyCount');
 const refreshHistoryBtn = document.getElementById('refreshHistoryBtn');
 const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 
-// Render history từ chrome.storage.local (popup có thể truy cập trực tiếp)
+// Render history từ StorageHelper
 async function loadHistory() {
   try {
-    const result = await chrome.storage.local.get(['messageHistory']);
+    const result = await StorageHelper.get(['messageHistory']);
     const history = result.messageHistory || [];
 
-    historyCountEl.textContent = `Tong: ${history.length} tin nhan`;
+    historyCountEl.textContent = i18n.t('history.total').replace('{n}', history.length);
 
     if (history.length === 0) {
       historyListEl.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">' + i18n.t('history.empty') + '</div>';
@@ -708,27 +859,26 @@ async function loadHistory() {
 
     historyListEl.innerHTML = history.slice(0, 100).map(item => `
       <div class="history-item">
-        <div class="history-name">${item.name || 'Unknown'}</div>
+        <div class="history-name">${item.name || i18n.t('history.unknown')}</div>
         <div class="history-msg">${item.message || ''}</div>
         <div class="history-time">${item.date || ''}</div>
       </div>
     `).join('');
   } catch (e) {
-    console.error('Lỗi load history:', e);
-      historyListEl.innerHTML = '<div style="color: red; text-align:center; padding:20px;">' + i18n.t('history.error') + '</div>';
+    historyListEl.innerHTML = '<div style="color: red; text-align:center; padding:20px;">' + i18n.t('history.error') + '</div>';
+    console.error(i18n.t('ai.aiError') + ' load history:', e);
   }
 }
 
 // Clear history
 async function clearHistory() {
-  if (!confirm('Bạn có chắc muốn xóa toàn bộ lịch sử?')) return;
-
+  if (!confirm(i18n.t('history.clearConfirm'))) return;
   try {
-    await chrome.storage.local.set({ messageHistory: [] });
-    loadHistory();
+    await StorageHelper.set({ messageHistory: [] });
   } catch (e) {
-    console.error('Lỗi xóa history:', e);
+    console.error(i18n.t('ai.aiError') + ' delete history:', e);
   }
+  loadHistory();
 }
 
 // Event listeners
@@ -754,12 +904,12 @@ const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
 const testApiKeyBtn = document.getElementById('testApiKeyBtn');
 const testResultEl = document.getElementById('testResult');
 const apiKeyStatusEl = document.getElementById('apiKeyStatus');
-const modeOptions = document.querySelectorAll('.mode-option');
+const modeOptions = document.querySelectorAll('.mode-card');
 
 // Load saved AI config on startup
 async function loadAIConfig() {
   try {
-    const result = await chrome.storage.local.get([
+    const result = await StorageHelper.get([
       'openRouterApiKey',
       'aiSystemPrompt',
       'aiUserPrompt',
@@ -801,7 +951,7 @@ async function loadAIConfig() {
       }
     }
   } catch (e) {
-    console.error('Lỗi load AI config:', e);
+    console.error(i18n.t('ai.aiError') + ' load AI config:', e);
   }
 }
 
@@ -828,16 +978,17 @@ function clearTestResult() {
 }
 
 function setAIMode(mode) {
-  selectedAIMode = mode;
+  selectedAIMode = ['fixed', 'random', 'ai'].includes(mode) ? mode : 'fixed';
   modeOptions.forEach(opt => {
     opt.classList.remove('selected');
     const radio = opt.querySelector('input[type="radio"]');
-    radio.checked = opt.dataset.mode === mode;
-    if (opt.dataset.mode === mode) {
+    radio.checked = opt.dataset.mode === selectedAIMode;
+    if (opt.dataset.mode === selectedAIMode) {
       opt.classList.add('selected');
     }
   });
-  chrome.storage.local.set({ aiMode: mode });
+  syncMessageModeUI(selectedAIMode);
+  StorageHelper.set({ aiMode: selectedAIMode }).catch(e => console.error(e));
 }
 
 modeOptions.forEach(opt => {
@@ -857,14 +1008,12 @@ saveApiKeyBtn.addEventListener('click', async () => {
   }
 
   saveApiKeyBtn.disabled = true;
-  saveApiKeyBtn.innerHTML = '<span>Dang luu...</span>';
+  saveApiKeyBtn.innerHTML = '<span>' + i18n.t('ai.saving') + '</span>';
 
   try {
-    const modelValue = modelSelect && modelSelect.value === 'custom'
-      ? (customModelInput ? customModelInput.value.trim() : '')
-      : (modelSelect ? modelSelect.value : 'google/gemini-2.5-flash');
+    const modelValue = getSelectedModel();
 
-    await chrome.storage.local.set({
+    await StorageHelper.set({
       openRouterApiKey: apiKey,
       aiSystemPrompt: systemPromptInput.value.trim(),
       aiUserPrompt: userPromptInput.value.trim(),
@@ -875,7 +1024,7 @@ saveApiKeyBtn.addEventListener('click', async () => {
     updateApiKeyStatus(true);
     setTimeout(clearTestResult, 2000);
   } catch (e) {
-    showTestResult('Loi luu: ' + e.message, 'error');
+    showTestResult(i18n.t('ai.aiError') + ': ' + e.message, 'error');
   }
 
   saveApiKeyBtn.disabled = false;
@@ -904,13 +1053,38 @@ testApiKeyBtn.addEventListener('click', async () => {
       updateApiKeyStatus(false);
     }
   } catch (e) {
-    showTestResult('Loi: ' + e.message, 'error');
+    showTestResult(i18n.t('ai.aiError') + ' ' + e.message, 'error');
   }
 
   testApiKeyBtn.disabled = false;
   testApiKeyBtn.textContent = i18n.t('ai.test');
   setTimeout(clearTestResult, 5000);
 });
+
+const savePromptBtn = document.getElementById('savePromptBtn');
+const promptSaveStatus = document.getElementById('promptSaveStatus');
+
+if (savePromptBtn) {
+  savePromptBtn.addEventListener('click', async () => {
+    savePromptBtn.disabled = true;
+    promptSaveStatus.style.display = 'block';
+    promptSaveStatus.textContent = i18n.t('ai.saving');
+    promptSaveStatus.style.color = 'var(--text-muted)';
+
+    try {
+      await saveAIConfig();
+      promptSaveStatus.textContent = i18n.t('ai.promptsSaved');
+      promptSaveStatus.style.color = 'var(--green)';
+      setTimeout(() => { promptSaveStatus.style.display = 'none'; }, 2000);
+    } catch (e) {
+      promptSaveStatus.textContent = i18n.t('ai.saveError').replace('{msg}', e.message);
+      promptSaveStatus.style.color = 'var(--red)';
+      setTimeout(() => { promptSaveStatus.style.display = 'none'; }, 3000);
+    }
+
+    savePromptBtn.disabled = false;
+  });
+}
 
 testAiGenerateBtn.addEventListener('click', async () => {
   const apiKey = apiKeyInput.value.trim();
@@ -930,7 +1104,9 @@ testAiGenerateBtn.addEventListener('click', async () => {
       model: model,
       systemPrompt: systemPromptInput.value.trim(),
       userPrompt: userPromptInput.value.trim(),
-      profile: 'mot co gai 25 tuoi, thich du lich va chup anh, song o TP.HCM'
+      profile: i18n.lang === 'vi'
+        ? 'mot co gai 25 tuoi, thich du lich va chup anh, song o TP.HCM'
+        : 'a 25 year old girl who loves traveling and photography, lives in Ho Chi Minh City'
     });
 
     aiGeneratingEl.style.display = 'none';
@@ -945,11 +1121,13 @@ testAiGenerateBtn.addEventListener('click', async () => {
   } catch (e) {
     aiGeneratingEl.style.display = 'none';
     testAiGenerateBtn.disabled = false;
-    showTestResult('Loi: ' + e.message, 'error');
+    showTestResult(i18n.t('ai.aiError') + ' ' + e.message, 'error');
   }
 });
 
+restoreMessageDraft();
 loadAIConfig();
+// DEBUG log - check values after loadAIConfig
 renderSavedMessages();
 
 // ========== I18N (Language Switch) ==========
@@ -958,38 +1136,36 @@ const langEnBtn = document.getElementById('langEn');
 
 async function applyLanguage(lang) {
   i18n.lang = lang;
-  await chrome.storage.local.set({ appLang: lang });
+  StorageHelper.set({ appLang: lang }).catch(e => console.error(e));
 
-  // Update textContent for all [data-i18n]
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     el.textContent = i18n.t(key);
   });
 
-  // Update placeholders for all [data-i18n-placeholder]
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
     const key = el.getAttribute('data-i18n-placeholder');
     el.placeholder = i18n.t(key);
   });
 
-  // Update button active states
   langViBtn.classList.toggle('active', lang === 'vi');
   langEnBtn.classList.toggle('active', lang === 'en');
 
-  // Update AI prompts with language defaults
   if (systemPromptInput) {
     const p = i18n.prompts[lang];
-    systemPromptInput.value = p.system;
-    userPromptInput.value = p.user;
+    // Only set defaults if no saved prompt exists (avoid overwriting values already loaded from storage)
+    const hasSys = systemPromptInput.value.trim() !== '';
+    const hasUsr = userPromptInput.value.trim() !== '';
+    if (!hasSys) systemPromptInput.value = p.system;
+    if (!hasUsr) userPromptInput.value = p.user;
   }
 
-  // Update saved messages empty state if visible
   const savedEmpty = document.querySelector('.saved-empty');
   if (savedEmpty) savedEmpty.textContent = i18n.t('msg.savedEmpty');
 }
 
-function switchToLang(lang) {
-  applyLanguage(lang);
+async function switchToLang(lang) {
+  await applyLanguage(lang);
 }
 
 if (langViBtn) langViBtn.addEventListener('click', () => switchToLang('vi'));
@@ -997,7 +1173,11 @@ if (langEnBtn) langEnBtn.addEventListener('click', () => switchToLang('en'));
 
 // Init language — load from storage or default to Vietnamese
 (async () => {
-  const result = await chrome.storage.local.get(['appLang']);
-  const savedLang = result.appLang || 'vi';
-  applyLanguage(savedLang);
+  try {
+    const result = await StorageHelper.get(['appLang']);
+    const savedLang = result.appLang || 'vi';
+    applyLanguage(savedLang);
+  } catch (e) {
+    applyLanguage('vi');
+  }
 })();

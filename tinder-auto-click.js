@@ -1,160 +1,160 @@
 // Tinder Auto-Click Script
 // Prevent duplicate injection
 if (window.__tinderAutoToolLoaded) {
-    console.log('🔥 Tinder Auto Tool đã được load trước đó, bỏ qua...');
+  console.log("🔥 Tinder matches đã được load trước đó, bỏ qua...");
 } else {
-    window.__tinderAutoToolLoaded = true;
-    console.log('🔥 Tinder Auto Tool đã được load');
+  window.__tinderAutoToolLoaded = true;
+  console.log("🔥 Tinder matches đã được load");
 
-    // ========== FLOATING QUOTE BUTTON UI ==========
+  // ========== FLOATING QUOTE BUTTON UI ==========
 
-    // Time-based quotes data
-    const quotesByTime = {
-        morning: {
-            label: '🌅 Sáng',
-            emoji: '☀️',
-            quotes: [
-                'Chào buổi sáng! Chúc bạn một ngày mới tràn đầy năng lượng! ☀️',
-                'Sáng nay thức dậy, mình nghĩ đến bạn đầu tiên 🌸',
-                'Mỗi buổi sáng là một khởi đầu mới. Chúc bạn nhiều niềm vui! 🌈',
-                'Good morning! Ngày mới tuyệt vời nhé! ✨',
-                'Chào ngày mới! Hãy luôn mỉm cười bạn nhé 😊',
-                'Dậy chưa em?',
-                'Sáng nay em ngủ có ngon không?',
-                'Em ăn sáng chưa?',
-                'Sáng nay em định làm gì?',
-                'Hôm nay em có bận không?',
-                'Em uống cà phê hay trà?',
-                'Sáng nay tâm trạng em thế nào?',
-                'Sáng nay em muốn nghe một điều vui không?',
-                'Hôm nay em muốn mọi thứ diễn ra kiểu nhẹ nhàng hay bận rộn?',
-                'Em thường làm gì vào cuối tuần?',
-                'Em thích uống đồ uống nào?',
-                'Nếu được chọn một nơi để đi du lịch ngay bây giờ, em sẽ chọn nơi nào?',
-                'Em có hay nghe nhạc không? Thể loại nào là "gu" của em?',
-                'Em là người hướng nội hay hướng ngoại?'
-            ]
-        },
-        noon: {
-            label: '🌞 Trưa',
-            emoji: '🌞',
-            quotes: [
-                'Buổi trưa vui vẻ! Nhớ ăn trưa đầy đủ nhé 🍜',
-                'Giữa ngày bận rộn, gửi bạn chút năng lượng tích cực! 💪',
-                'Chúc buổi trưa an lành, chiều thêm may mắn! ✨',
-                'Trưa rồi, nghỉ ngơi tí đi bạn ơi! ☕',
-                'Gửi bạn một buổi trưa thật vui! 🌟',
-                'Em ăn cơm chưa?',
-                'Em ăn mấy bát? 😄',
-                'Trưa nay em ăn gì?',
-                'Em nghỉ trưa được không?',
-                'Buổi sáng nay của em ổn không?',
-                'Trưa nóng lắm, em uống nước chưa?',
-                'Trưa nay em có đi đâu không?',
-                'Có món nào em thèm mà lâu rồi chưa ăn không?',
-                'Kỷ niệm tuổi thơ nào khiến em nhớ nhất?',
-                'Điều gì khiến em cảm thấy hạnh phúc nhất gần đây?',
-                'Ai là người truyền cảm hứng lớn nhất cho em?',
-                'Nếu được chọn một siêu năng lực, em muốn có gì?',
-                'Em có tin vào tình yêu sét đánh không?'
-            ]
-        },
-        afternoon: {
-            label: '🌤️ Chiều',
-            emoji: '🌤️',
-            quotes: [
-                'Chiều nay em đang làm gì?',
-                'Hôm nay em mệt không?',
-                'Việc học/công việc chiều nay ổn chứ?',
-                'Em có cần nghỉ một chút không?',
-                'Chiều nay em uống gì cho tỉnh?',
-                'Có chuyện gì làm em vui (hoặc khó chịu) hôm nay không?',
-                'Chiều nay em muốn tan làm/tan học sớm không?',
-                'Nếu được chọn, chiều nay em muốn đi dạo hay ở nhà nghỉ?',
-                'Em là kiểu người thích lên kế hoạch hay sống ngẫu hứng?',
-                'Nếu có một ngày rảnh hoàn toàn, em sẽ dùng nó như thế nào?',
-                'Em nghĩ một mối quan hệ lâu dài cần nhất điều gì?',
-                'Em có bao giờ cảm thấy ai đó đang âm thầm quan tâm mình không?',
-                'Em nghĩ tình cảm nên bắt đầu từ tình bạn hay ánh nhìn đầu tiên?'
-            ]
-        },
-        evening: {
-            label: '🌙 Tối',
-            emoji: '🌙',
-            quotes: [
-                'Buổi tối an lành! Ngày hôm nay của bạn thế nào? 🌙',
-                'Chúc bạn một đêm ngủ ngon và những giấc mơ đẹp 💤',
-                'Cuối ngày rồi, thư giãn và nghỉ ngơi thật tốt nhé! 🌟',
-                'Tối nay có gì vui không? Kể mình nghe đi! 💬',
-                'Good night! Ngủ ngon nhé bạn 🌟',
-                'Em ăn tối chưa?',
-                'Tối nay em định làm gì?',
-                'Em về nhà chưa?',
-                'Hôm nay của em thế nào rồi?',
-                'Tối nay em muốn thư giãn kiểu gì?',
-                'Em có muốn kể anh nghe một chuyện trong ngày không?',
-                'Ngủ sớm nha, mai còn năng lượng.',
-                'Tối nay em muốn xem phim, nghe nhạc hay đi dạo?',
-                'Nếu có người thích em thầm lặng mỗi ngày, em có muốn biết không?',
-                'Điều gì làm em cảm thấy mình đang sống thật sự?',
-                'Em sợ điều gì nhất trong một mối quan hệ?',
-                'Nếu mai là ngày tận thế, em sẽ làm gì hôm nay?',
-                'Nếu anh là người duy nhất còn lại trên Trái Đất, em có đi tìm anh không?',
-                'Nếu một ngày thức dậy và em đổi giới tính, em sẽ làm gì trước tiên?',
-                'Nếu em viết sách về cuộc đời mình, tên sách sẽ là gì?',
-                'Nếu có thể ăn một món duy nhất cả đời, em chọn gì?',
-                'Em đã từng muốn thử điều gì mà chưa dám không?',
-                'Nếu được chọn, em muốn đi picnic, du lịch biển hay leo núi?'
-            ]
-        },
-        deep: {
-            label: '💘 Deep',
-            emoji: '💘',
-            quotes: [
-                'Em thường làm gì vào cuối tuần?',
-                'Em thích uống đồ uống nào?',
-                'Nếu được chọn một nơi để đi du lịch ngay bây giờ, em sẽ chọn nơi nào?',
-                'Em có hay nghe nhạc không? Thể loại nào là "gu" của em?',
-                'Em là người hướng nội hay hướng ngoại?',
-                'Kỷ niệm tuổi thơ nào khiến em nhớ nhất?',
-                'Điều gì khiến em cảm thấy hạnh phúc nhất gần đây?',
-                'Ai là người truyền cảm hứng lớn nhất cho em?',
-                'Nếu được chọn một siêu năng lực, em muốn có gì?',
-                'Em có tin vào tình yêu sét đánh không?',
-                'Em là kiểu người thích lên kế hoạch hay sống ngẫu hứng?',
-                'Nếu có một ngày rảnh hoàn toàn, em sẽ dùng nó như thế nào?',
-                'Em nghĩ một mối quan hệ lâu dài cần nhất điều gì?',
-                'Em có bao giờ cảm thấy ai đó đang âm thầm quan tâm mình không?',
-                'Em nghĩ tình cảm nên bắt đầu từ tình bạn hay ánh nhìn đầu tiên?',
-                'Nếu có người thích em thầm lặng mỗi ngày, em có muốn biết không?',
-                'Điều gì làm em cảm thấy mình đang sống thật sự?',
-                'Em sợ điều gì nhất trong một mối quan hệ?',
-                'Nếu mai là ngày tận thế, em sẽ làm gì hôm nay?',
-                'Nếu anh là người duy nhất còn lại trên Trái Đất, em có đi tìm anh không?',
-                'Nếu một ngày thức dậy và em đổi giới tính, em sẽ làm gì trước tiên?',
-                'Nếu em viết sách về cuộc đời mình, tên sách sẽ là gì?',
-                'Nếu có thể ăn một món duy nhất cả đời, em chọn gì?',
-                'Em đã từng muốn thử điều gì mà chưa dám không?',
-                'Nếu được chọn, em muốn đi picnic, du lịch biển hay leo núi?'
-            ]
-        }
-    };
+  // Time-based quotes data
+  const quotesByTime = {
+    morning: {
+      label: "🌅 Sáng",
+      emoji: "☀️",
+      quotes: [
+        "Chào buổi sáng! Chúc bạn một ngày mới tràn đầy năng lượng! ☀️",
+        "Sáng nay thức dậy, mình nghĩ đến bạn đầu tiên 🌸",
+        "Mỗi buổi sáng là một khởi đầu mới. Chúc bạn nhiều niềm vui! 🌈",
+        "Good morning! Ngày mới tuyệt vời nhé! ✨",
+        "Chào ngày mới! Hãy luôn mỉm cười bạn nhé 😊",
+        "Dậy chưa em?",
+        "Sáng nay em ngủ có ngon không?",
+        "Em ăn sáng chưa?",
+        "Sáng nay em định làm gì?",
+        "Hôm nay em có bận không?",
+        "Em uống cà phê hay trà?",
+        "Sáng nay tâm trạng em thế nào?",
+        "Sáng nay em muốn nghe một điều vui không?",
+        "Hôm nay em muốn mọi thứ diễn ra kiểu nhẹ nhàng hay bận rộn?",
+        "Em thường làm gì vào cuối tuần?",
+        "Em thích uống đồ uống nào?",
+        "Nếu được chọn một nơi để đi du lịch ngay bây giờ, em sẽ chọn nơi nào?",
+        'Em có hay nghe nhạc không? Thể loại nào là "gu" của em?',
+        "Em là người hướng nội hay hướng ngoại?",
+      ],
+    },
+    noon: {
+      label: "🌞 Trưa",
+      emoji: "🌞",
+      quotes: [
+        "Buổi trưa vui vẻ! Nhớ ăn trưa đầy đủ nhé 🍜",
+        "Giữa ngày bận rộn, gửi bạn chút năng lượng tích cực! 💪",
+        "Chúc buổi trưa an lành, chiều thêm may mắn! ✨",
+        "Trưa rồi, nghỉ ngơi tí đi bạn ơi! ☕",
+        "Gửi bạn một buổi trưa thật vui! 🌟",
+        "Em ăn cơm chưa?",
+        "Em ăn mấy bát? 😄",
+        "Trưa nay em ăn gì?",
+        "Em nghỉ trưa được không?",
+        "Buổi sáng nay của em ổn không?",
+        "Trưa nóng lắm, em uống nước chưa?",
+        "Trưa nay em có đi đâu không?",
+        "Có món nào em thèm mà lâu rồi chưa ăn không?",
+        "Kỷ niệm tuổi thơ nào khiến em nhớ nhất?",
+        "Điều gì khiến em cảm thấy hạnh phúc nhất gần đây?",
+        "Ai là người truyền cảm hứng lớn nhất cho em?",
+        "Nếu được chọn một siêu năng lực, em muốn có gì?",
+        "Em có tin vào tình yêu sét đánh không?",
+      ],
+    },
+    afternoon: {
+      label: "🌤️ Chiều",
+      emoji: "🌤️",
+      quotes: [
+        "Chiều nay em đang làm gì?",
+        "Hôm nay em mệt không?",
+        "Việc học/công việc chiều nay ổn chứ?",
+        "Em có cần nghỉ một chút không?",
+        "Chiều nay em uống gì cho tỉnh?",
+        "Có chuyện gì làm em vui (hoặc khó chịu) hôm nay không?",
+        "Chiều nay em muốn tan làm/tan học sớm không?",
+        "Nếu được chọn, chiều nay em muốn đi dạo hay ở nhà nghỉ?",
+        "Em là kiểu người thích lên kế hoạch hay sống ngẫu hứng?",
+        "Nếu có một ngày rảnh hoàn toàn, em sẽ dùng nó như thế nào?",
+        "Em nghĩ một mối quan hệ lâu dài cần nhất điều gì?",
+        "Em có bao giờ cảm thấy ai đó đang âm thầm quan tâm mình không?",
+        "Em nghĩ tình cảm nên bắt đầu từ tình bạn hay ánh nhìn đầu tiên?",
+      ],
+    },
+    evening: {
+      label: "🌙 Tối",
+      emoji: "🌙",
+      quotes: [
+        "Buổi tối an lành! Ngày hôm nay của bạn thế nào? 🌙",
+        "Chúc bạn một đêm ngủ ngon và những giấc mơ đẹp 💤",
+        "Cuối ngày rồi, thư giãn và nghỉ ngơi thật tốt nhé! 🌟",
+        "Tối nay có gì vui không? Kể mình nghe đi! 💬",
+        "Good night! Ngủ ngon nhé bạn 🌟",
+        "Em ăn tối chưa?",
+        "Tối nay em định làm gì?",
+        "Em về nhà chưa?",
+        "Hôm nay của em thế nào rồi?",
+        "Tối nay em muốn thư giãn kiểu gì?",
+        "Em có muốn kể anh nghe một chuyện trong ngày không?",
+        "Ngủ sớm nha, mai còn năng lượng.",
+        "Tối nay em muốn xem phim, nghe nhạc hay đi dạo?",
+        "Nếu có người thích em thầm lặng mỗi ngày, em có muốn biết không?",
+        "Điều gì làm em cảm thấy mình đang sống thật sự?",
+        "Em sợ điều gì nhất trong một mối quan hệ?",
+        "Nếu mai là ngày tận thế, em sẽ làm gì hôm nay?",
+        "Nếu anh là người duy nhất còn lại trên Trái Đất, em có đi tìm anh không?",
+        "Nếu một ngày thức dậy và em đổi giới tính, em sẽ làm gì trước tiên?",
+        "Nếu em viết sách về cuộc đời mình, tên sách sẽ là gì?",
+        "Nếu có thể ăn một món duy nhất cả đời, em chọn gì?",
+        "Em đã từng muốn thử điều gì mà chưa dám không?",
+        "Nếu được chọn, em muốn đi picnic, du lịch biển hay leo núi?",
+      ],
+    },
+    deep: {
+      label: "💘 Deep",
+      emoji: "💘",
+      quotes: [
+        "Em thường làm gì vào cuối tuần?",
+        "Em thích uống đồ uống nào?",
+        "Nếu được chọn một nơi để đi du lịch ngay bây giờ, em sẽ chọn nơi nào?",
+        'Em có hay nghe nhạc không? Thể loại nào là "gu" của em?',
+        "Em là người hướng nội hay hướng ngoại?",
+        "Kỷ niệm tuổi thơ nào khiến em nhớ nhất?",
+        "Điều gì khiến em cảm thấy hạnh phúc nhất gần đây?",
+        "Ai là người truyền cảm hứng lớn nhất cho em?",
+        "Nếu được chọn một siêu năng lực, em muốn có gì?",
+        "Em có tin vào tình yêu sét đánh không?",
+        "Em là kiểu người thích lên kế hoạch hay sống ngẫu hứng?",
+        "Nếu có một ngày rảnh hoàn toàn, em sẽ dùng nó như thế nào?",
+        "Em nghĩ một mối quan hệ lâu dài cần nhất điều gì?",
+        "Em có bao giờ cảm thấy ai đó đang âm thầm quan tâm mình không?",
+        "Em nghĩ tình cảm nên bắt đầu từ tình bạn hay ánh nhìn đầu tiên?",
+        "Nếu có người thích em thầm lặng mỗi ngày, em có muốn biết không?",
+        "Điều gì làm em cảm thấy mình đang sống thật sự?",
+        "Em sợ điều gì nhất trong một mối quan hệ?",
+        "Nếu mai là ngày tận thế, em sẽ làm gì hôm nay?",
+        "Nếu anh là người duy nhất còn lại trên Trái Đất, em có đi tìm anh không?",
+        "Nếu một ngày thức dậy và em đổi giới tính, em sẽ làm gì trước tiên?",
+        "Nếu em viết sách về cuộc đời mình, tên sách sẽ là gì?",
+        "Nếu có thể ăn một món duy nhất cả đời, em chọn gì?",
+        "Em đã từng muốn thử điều gì mà chưa dám không?",
+        "Nếu được chọn, em muốn đi picnic, du lịch biển hay leo núi?",
+      ],
+    },
+  };
 
-    function getCurrentTimeSlot() {
-        const hour = new Date().getHours();
-        if (hour >= 5 && hour < 11) return 'morning';
-        if (hour >= 11 && hour < 14) return 'noon';
-        if (hour >= 14 && hour < 17) return 'afternoon';
-        return 'evening';
-    }
+  function getCurrentTimeSlot() {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 11) return "morning";
+    if (hour >= 11 && hour < 14) return "noon";
+    if (hour >= 14 && hour < 17) return "afternoon";
+    return "evening";
+  }
 
-    function createFloatingQuoteUI() {
-        // Check if already exists
-        if (document.getElementById('tinder-quote-btn')) return;
+  function createFloatingQuoteUI() {
+    // Check if already exists
+    if (document.getElementById("tinder-quote-btn")) return;
 
-        // Create styles
-        const styles = document.createElement('style');
-        styles.textContent = `
+    // Create styles
+    const styles = document.createElement("style");
+    styles.textContent = `
     #tinder-quote-btn {
       position: fixed;
       bottom: 100px;
@@ -262,996 +262,1033 @@ if (window.__tinderAutoToolLoaded) {
       border-radius: 10px;
     }
   `;
-        document.head.appendChild(styles);
+    document.head.appendChild(styles);
 
-        // Create main button
-        const btn = document.createElement('button');
-        btn.id = 'tinder-quote-btn';
-        btn.innerHTML = '💬';
-        btn.title = 'Chọn Quote';
-        document.body.appendChild(btn);
+    // Create main button
+    const btn = document.createElement("button");
+    btn.id = "tinder-quote-btn";
+    btn.innerHTML = "💬";
+    btn.title = "Chọn Quote";
+    document.body.appendChild(btn);
 
-        // Create menu
-        const menu = document.createElement('div');
-        menu.id = 'tinder-quote-menu';
+    // Create menu
+    const menu = document.createElement("div");
+    menu.id = "tinder-quote-menu";
 
-        const currentSlot = getCurrentTimeSlot();
-        const currentLabel = quotesByTime[currentSlot].label;
+    const currentSlot = getCurrentTimeSlot();
+    const currentLabel = quotesByTime[currentSlot].label;
 
-        menu.innerHTML = `
+    menu.innerHTML = `
     <div class="quote-menu-header">
       <span>💬 Chọn Quote</span>
       <span class="current-time-badge">Hiện tại: ${currentLabel}</span>
       <button class="quote-menu-close">✕</button>
     </div>
     <div class="quote-tabs">
-      <button class="quote-tab ${currentSlot === 'morning' ? 'active' : ''}" data-slot="morning">🌅 Sáng</button>
-      <button class="quote-tab ${currentSlot === 'noon' ? 'active' : ''}" data-slot="noon">🌞 Trưa</button>
-      <button class="quote-tab ${currentSlot === 'afternoon' ? 'active' : ''}" data-slot="afternoon">🌤️ Chiều</button>
-      <button class="quote-tab ${currentSlot === 'evening' ? 'active' : ''}" data-slot="evening">🌙 Tối</button>
+      <button class="quote-tab ${currentSlot === "morning" ? "active" : ""}" data-slot="morning">🌅 Sáng</button>
+      <button class="quote-tab ${currentSlot === "noon" ? "active" : ""}" data-slot="noon">🌞 Trưa</button>
+      <button class="quote-tab ${currentSlot === "afternoon" ? "active" : ""}" data-slot="afternoon">🌤️ Chiều</button>
+      <button class="quote-tab ${currentSlot === "evening" ? "active" : ""}" data-slot="evening">🌙 Tối</button>
       <button class="quote-tab" data-slot="deep">💘 Deep</button>
     </div>
     <div class="quote-list" id="quote-list-content"></div>
   `;
-        document.body.appendChild(menu);
+    document.body.appendChild(menu);
 
-        // Render quotes
-        function renderQuotes(slot) {
-            const listEl = document.getElementById('quote-list-content');
-            const quotes = quotesByTime[slot].quotes;
-            listEl.innerHTML = quotes.map((q, i) => `
-      <div class="quote-item" data-quote="${q.replace(/"/g, '&quot;')}">${q}</div>
-    `).join('');
-        }
-
-        // Initial render
-        renderQuotes(currentSlot);
-
-        // Tab switching
-        menu.querySelectorAll('.quote-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                menu.querySelectorAll('.quote-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                renderQuotes(tab.dataset.slot);
-            });
-        });
-
-        // Quote click - insert to textarea
-        menu.querySelector('.quote-list').addEventListener('click', (e) => {
-            if (e.target.classList.contains('quote-item')) {
-                const quote = e.target.dataset.quote;
-                insertQuoteToTextarea(quote);
-                menu.classList.remove('show');
-            }
-        });
-
-        // Toggle menu
-        btn.addEventListener('click', () => {
-            menu.classList.toggle('show');
-        });
-
-        // Close button
-        menu.querySelector('.quote-menu-close').addEventListener('click', () => {
-            menu.classList.remove('show');
-        });
-
-        // Close on outside click
-        document.addEventListener('click', (e) => {
-            if (!menu.contains(e.target) && e.target !== btn) {
-                menu.classList.remove('show');
-            }
-        });
-
-        console.log('✅ Quote UI đã được tạo!');
+    // Render quotes
+    function renderQuotes(slot) {
+      const listEl = document.getElementById("quote-list-content");
+      const quotes = quotesByTime[slot].quotes;
+      listEl.innerHTML = quotes
+        .map(
+          (q, i) => `
+      <div class="quote-item" data-quote="${q.replace(/"/g, "&quot;")}">${q}</div>
+    `,
+        )
+        .join("");
     }
 
-    function insertQuoteToTextarea(quote) {
-        const textarea = document.querySelector('textarea[placeholder="Type a message"]');
-        if (textarea) {
-            textarea.focus();
-            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
-            nativeInputValueSetter.call(textarea, quote);
-            textarea.dispatchEvent(new Event('input', { bubbles: true }));
-            console.log('✅ Đã chèn quote:', quote);
-        } else {
-            alert('Vui lòng mở một cuộc trò chuyện trước!');
-        }
-    }
-
-    // Initialize UI when page loads
-    setTimeout(createFloatingQuoteUI, 1500);
-
-    // ========== GAMEPAD AUTO CLICK ==========
-    let autoClickTimeout = null;
-    let isRunning = false;
-    let currentClick = 0;
-    let totalClicks = 0;
-    let minDelayMs = 1000;
-    let maxDelayMs = 3000;
-
-    function getRandomDelay(min, max) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-
-    function clickGamepadIcon() {
-        // Target the Like button specifically (has sparks-like class)
-        const likeButton = document.querySelector('button[class*="gamepad-sparks-like"]');
-        if (likeButton) {
-            likeButton.click();
-            console.log('💚 Clicked LIKE button');
-            return true;
-        }
-
-        // Fallback: try to find by the wrapper class with like styling
-        const likeWrapper = document.querySelector('.gamepad-button-wrapper button[class*="sparks-like"]');
-        if (likeWrapper) {
-            likeWrapper.click();
-            console.log('💚 Clicked LIKE button (fallback)');
-            return true;
-        }
-
-        console.log('❌ Like button not found');
-        return false;
-    }
-
-    function startAutoClick(count, minDelay, maxDelay) {
-        stopAutoClick();
-        currentClick = 0;
-        totalClicks = count;
-        minDelayMs = minDelay;
-        maxDelayMs = maxDelay;
-        isRunning = true;
-        console.log(`🚀 Auto click: ${count} lần, delay ${minDelay / 1000}s - ${maxDelay / 1000}s`);
-        performClick();
-    }
-
-    function scheduleNextClick() {
-        if (!isRunning || currentClick >= totalClicks) return;
-        const delay = getRandomDelay(minDelayMs, maxDelayMs);
-        autoClickTimeout = setTimeout(performClick, delay);
-    }
-
-    function performClick() {
-        if (!isRunning || currentClick >= totalClicks) {
-            stopAutoClick();
-            chrome.runtime.sendMessage({ action: 'completed', total: currentClick });
-            return;
-        }
-
-        if (clickGamepadIcon()) {
-            currentClick++;
-            chrome.runtime.sendMessage({ action: 'updateProgress', current: currentClick, total: totalClicks });
-            scheduleNextClick();
-        } else {
-            stopAutoClick();
-            chrome.runtime.sendMessage({ action: 'error', message: 'Không tìm thấy gamepad icon!' });
-        }
-    }
-
-    function stopAutoClick() {
-        isRunning = false;
-        if (autoClickTimeout) {
-            clearTimeout(autoClickTimeout);
-            autoClickTimeout = null;
-        }
-    }
-
-    // ========== BULK MESSAGE ==========
-    let isSendingMessages = false;
-    let messageTimeout = null;
-    let currentMessageIndex = 0;
-    let totalMessages = 0;
-    let messageToSend = '';
-    let quotesArray = [];
-    let useRandomQuotes = false;
-    let msgMinDelay = 3000;
-    let msgMaxDelay = 5000;
-    let processedHrefs = [];
-
-    // ========== STORAGE HELPER ==========
-    // Chống lỗi "Cannot read properties of undefined (reading 'local')" nếu script thay vì content script bị chạy ở môi trường thường (như extension dev reload, userscript, paste console...).
-    const StorageHelper = {
-        async get(keys) {
-            try {
-                if (typeof chrome !== 'undefined' && chrome && chrome.storage && chrome.storage.local) {
-                    return await chrome.storage.local.get(keys);
-                }
-            } catch (e) {
-                console.warn("Chrome storage not available, fallback to localStorage", e);
-            }
-            // Fallback
-            const result = {};
-            keys.forEach(key => {
-                const val = localStorage.getItem('tinder_ext_' + key);
-                if (val) result[key] = JSON.parse(val);
-            });
-            return result;
-        },
-        async set(obj) {
-            try {
-                if (typeof chrome !== 'undefined' && chrome && chrome.storage && chrome.storage.local) {
-                    await chrome.storage.local.set(obj);
-                    return;
-                }
-            } catch (e) {
-                console.warn("Chrome storage not available, fallback to localStorage", e);
-            }
-            // Fallback
-            Object.keys(obj).forEach(key => {
-                localStorage.setItem('tinder_ext_' + key, JSON.stringify(obj[key]));
-            });
-        }
-    };
-
-    // ========== MESSAGE HISTORY ==========
-    // Lưu lịch sử tin nhắn đã gửi
-    async function saveMessageHistory(name, message) {
-        try {
-            const result = await StorageHelper.get(['messageHistory']);
-            const history = result.messageHistory || [];
-
-            history.unshift({
-                name: name,
-                message: message,
-                timestamp: new Date().toISOString(),
-                date: new Date().toLocaleString('vi-VN')
-            });
-
-            // Giới hạn 500 bản ghi
-            if (history.length > 500) {
-                history.splice(500);
-            }
-
-            await StorageHelper.set({ messageHistory: history });
-            console.log(`📝 Đã lưu lịch sử: ${name}`);
-        } catch (e) {
-            console.error('❌ Lỗi lưu lịch sử:', e);
-        }
-    }
-
-    // Lấy lịch sử tin nhắn
-    async function getMessageHistory() {
-        const result = await StorageHelper.get(['messageHistory']);
-        return result.messageHistory || [];
-    }
-
-    // Xóa lịch sử
-    async function clearMessageHistory() {
-        await StorageHelper.set({ messageHistory: [] });
-        console.log('🗑️ Đã xóa lịch sử');
-    }
-
-    // Lấy tin nhắn cho người thứ N (mỗi người 1 quote khác nhau)
-    function getMessageForPerson(index) {
-        if (useRandomQuotes && quotesArray.length > 0) {
-            // Lấy quote theo index, nếu hết thì quay vòng lại từ đầu
-            const quoteIndex = index % quotesArray.length;
-            return quotesArray[quoteIndex];
-        }
-        return messageToSend;
-    }
-
-    // Lấy danh sách message items từ sidebar
-    function getMessageItems() {
-        // Thử nhiều selector khác nhau
-        let items = document.querySelectorAll('.messageList ul li > a.messageListItem');
-        if (items.length === 0) {
-            items = document.querySelectorAll('ul[aria-label="Your recent messages"] li > a');
-        }
-        if (items.length === 0) {
-            items = document.querySelectorAll('a.messageListItem');
-        }
-        console.log(`📋 Tìm thấy ${items.length} items trong sidebar`);
-        return Array.from(items);
-    }
-
-    // Lấy container scroll của message list
-    function getMessageListContainer() {
-        // Thử nhiều selector
-        let container = document.querySelector('.messageList');
-        if (!container) {
-            container = document.querySelector('[class*="MessageList"]');
-        }
-        if (!container) {
-            // Tìm parent của message items
-            const items = getMessageItems();
-            if (items.length > 0) {
-                container = items[0].closest('ul')?.parentElement || items[0].closest('[class*="message"]');
-            }
-        }
-        return container;
-    }
-
-    // Cuộn xuống cho đến khi tìm thấy tin nhắn chưa được xử lý
-    async function scrollToFindNewPerson(maxScrolls = 20) {
-        const container = getMessageListContainer();
-        if (!container) {
-            console.log('⚠️ Không tìm thấy container để scroll');
-            return false;
-        }
-
-        console.log(`📜 Đang scroll để tìm người nhắn mới...`);
-
-        for (let i = 0; i < maxScrolls; i++) {
-            const items = getMessageItems();
-            
-            // Check if there is any item not in processedHrefs
-            const hasNew = items.some(item => item && item.href && !processedHrefs.includes(item.href));
-            if (hasNew) {
-                console.log(`✅ Đã tìm thấy người mới sau ${i} lần cuộn.`);
-                return true;
-            }
-
-            container.scrollBy({ top: 1200, behavior: 'smooth' });
-            // Đợi load để React kịp render layout, tránh layout thrashing
-            await new Promise(resolve => setTimeout(resolve, 1500));
-        }
-        
-        console.log(`⚠️ Không tìm thấy thêm người mới sau ${maxScrolls} lần cuộn.`);
-        return false;
-    }
-
-    // Scroll item vào view
-    function scrollItemIntoView(item) {
-        if (item) {
-            item.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-    }
-
-    function startBulkMessage(message, quotes, useRandom, count, minDelay, maxDelay) {
-        stopBulkMessage();
-
-        messageToSend = message;
-        quotesArray = quotes || [];
-        useRandomQuotes = useRandom || false;
-        msgMinDelay = minDelay;
-        msgMaxDelay = maxDelay;
-
-        const items = getMessageItems();
-        if (items.length === 0) {
-            chrome.runtime.sendMessage({ action: 'error', message: 'Không tìm thấy danh sách tin nhắn!' });
-            return;
-        }
-
-        // Limit count if specified. If count === 0 (all), use a large boundary.
-        totalMessages = count > 0 ? count : 9999;
-        currentMessageIndex = 0;
-        processedHrefs = [];
-        isSendingMessages = true;
-
-        // Lưu trạng thái để phục hồi sau khi reload
-        const state = {
-            isRunning: true,
-            messageToSend,
-            quotesArray,
-            useRandomQuotes,
-            totalMessages,
-            currentMessageIndex: 0,
-            msgMinDelay,
-            msgMaxDelay,
-            processedHrefs: []
-        };
-        StorageHelper.set({ bulkMsgState: state });
-
-        console.log(`📨 Bắt đầu gửi tin nhắn cho ${totalMessages === 9999 ? 'tất cả' : totalMessages} người`);
-        console.log(`📋 Mode: ${useRandomQuotes ? 'Random quotes (' + quotesArray.length + ' câu)' : 'Single message'}`);
-
-        // Bắt đầu với item đầu tiên ngay lập tức, scroll động thay vì load hàng loạt lúc bắt đầu
-        clickAndSendMessage();
-
-        return true;
-    }
-
-    // Hàm chính: click vào item và gửi tin nhắn
-    function clickAndSendMessage() {
-        if (!isSendingMessages) {
-            console.log('⚠️ Đã bị dừng');
-            return;
-        }
-
-        if (currentMessageIndex >= totalMessages) {
-            console.log('✅ Hoàn thành tất cả!');
-            stopBulkMessage();
-            chrome.runtime.sendMessage({ action: 'completed', total: currentMessageIndex });
-            return;
-        }
-
-        // Lưu tiến trình
-        StorageHelper.get(['bulkMsgState']).then((res) => {
-            if (res.bulkMsgState && res.bulkMsgState.isRunning) {
-                res.bulkMsgState.currentMessageIndex = currentMessageIndex;
-                res.bulkMsgState.processedHrefs = processedHrefs;
-                StorageHelper.set({ bulkMsgState: res.bulkMsgState });
-            }
-        }).catch(e => console.error("Lỗi lưu tiến trình:", e));
-
-        processCurrentItem();
-    }
-
-    // Xử lý item hiện tại
-    function processCurrentItem() {
-        const items = getMessageItems();
-        
-        // CƠ CHẾ CHỐNG DUPLICATE TUYỆT ĐỐI KHÔNG DỰA VÀO INDEX THAY ĐỔI
-        let targetItem = null;
-        for (let i = 0; i < items.length; i++) {
-            if (items[i] && items[i].href && !processedHrefs.includes(items[i].href)) {
-                targetItem = items[i];
-                break;
-            }
-        }
-
-        if (!targetItem) {
-            console.log('📜 Hết người mới hiển thị trên màn hình, đang cuộn để tìm thêm...');
-            
-            scrollToFindNewPerson(15).then((foundNew) => {
-                if (!foundNew) {
-                    console.log('⚠️ Không tìm thấy người mới nào nữa. Đã hết danh sách.');
-                    stopBulkMessage();
-                    chrome.runtime.sendMessage({ action: 'completed', total: currentMessageIndex });
-                    return;
-                }
-                
-                // Nếu tìm thấy, tiếp tục chạy lại để xử lý
-                setTimeout(processCurrentItem, 1000);
-            });
-            return;
-        }
-
-        const currentItem = targetItem;
-        // Đánh dấu là ĐÃ TIN NHẮN (ngay lập tức) để tránh bị duplicate vĩnh viễn (kể cả khi DOM bị xáo trộn hoặc reload)
-        processedHrefs.push(currentItem.href);
-
-        const name = currentItem.getAttribute('aria-label') || `Person ${currentMessageIndex + 1}`;
-
-        console.log(`\n========================================`);
-        console.log(`📩 [${currentMessageIndex + 1}/${totalMessages}] Đang xử lý: ${name}`);
-        console.log(`========================================`);
-
-        // Step 1: Scroll item vào view trước
-        console.log('📜 Step 0: Scroll item vào view...');
-        scrollItemIntoView(currentItem);
-
-        // Step 2: Click vào item trong sidebar (sau khi scroll)
-        setTimeout(() => {
-            console.log('👆 Step 1: Click vào item...');
-            currentItem.click();
-
-            // Step 2: Đợi conversation load rồi type và send
-            setTimeout(() => {
-                console.log('✍️ Step 2: Tìm textarea và nhập tin nhắn...');
-
-                const textarea = document.querySelector('textarea[placeholder="Type a message"]');
-                if (!textarea) {
-                    console.log('❌ Không tìm thấy textarea, bỏ qua người này');
-                    currentMessageIndex++;
-                    chrome.runtime.sendMessage({ action: 'updateProgress', current: currentMessageIndex, total: totalMessages });
-                    scheduleNextPerson();
-                    return;
-                }
-
-                // Type message - lấy tin nhắn cho người này (mỗi người 1 quote khác nhau)
-                const currentMessage = getMessageForPerson(currentMessageIndex);
-                textarea.focus();
-                const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
-                nativeInputValueSetter.call(textarea, currentMessage);
-                textarea.dispatchEvent(new Event('input', { bubbles: true }));
-                console.log(`✅ Đã nhập tin nhắn [${currentMessageIndex + 1}]:`, currentMessage);
-
-                // Step 3: Click nút Send
-                setTimeout(() => {
-                    console.log('📤 Step 3: Click nút SEND...');
-                    const sendButton = document.querySelector('button[type="submit"]');
-
-                    if (sendButton) {
-                        sendButton.click();
-                        console.log('✅ Đã click SEND!');
-
-                        // Lưu lịch sử tin nhắn đã gửi
-                        saveMessageHistory(name, currentMessage);
-                    } else {
-                        console.log('❌ Không tìm thấy nút SEND');
-                    }
-
-                    // Update progress
-                    currentMessageIndex++;
-                    chrome.runtime.sendMessage({
-                        action: 'updateProgress',
-                        current: currentMessageIndex,
-                        total: totalMessages
-                    });
-
-                    // Step 4: Đợi delay rồi xử lý người tiếp theo
-                    console.log('⏳ Step 4: Chờ delay rồi xử lý người tiếp theo...');
-                    scheduleNextPerson();
-
-                }, 800); // Đợi textarea update
-
-            }, 2000); // Đợi conversation load
-        }, 300); // Đợi scroll
-    }
-
-    // Lên lịch xử lý người tiếp theo
-    function scheduleNextPerson() {
-        if (!isSendingMessages) {
-            console.log('⚠️ Đã bị dừng, không tiếp tục');
-            return;
-        }
-
-        if (currentMessageIndex >= totalMessages) {
-            console.log('🎉 Đã hoàn thành tất cả!');
-            stopBulkMessage();
-            chrome.runtime.sendMessage({ action: 'completed', total: currentMessageIndex });
-            return;
-        }
-
-        let delay = getRandomDelay(msgMinDelay, msgMaxDelay);
-        
-        // Anti-crash mechanism: every 10 messages, clear React memory by navigating to empty messages route
-        if (currentMessageIndex > 0 && currentMessageIndex % 10 === 0) {
-            console.log(`🧹 Đã gửi ${currentMessageIndex} tin nhắn. Đang CHUYỂN HƯỚNG để dọn dẹp bộ nhớ chống Crash (OOM)...`);
-            
-            // LƯU LẠI INDEX MỚI TRƯỚC KHI RELOAD ĐỂ TRÁNH TRÙNG LẶP TIN NHẮN (DUPLICATE BUG)
-            StorageHelper.get(['bulkMsgState']).then((res) => {
-                if (res.bulkMsgState && res.bulkMsgState.isRunning) {
-                    res.bulkMsgState.currentMessageIndex = currentMessageIndex;
-                    res.bulkMsgState.processedHrefs = processedHrefs;
-                    StorageHelper.set({ bulkMsgState: res.bulkMsgState });
-                }
-            }).catch(e => console.error("Lỗi lưu trước khi reload:", e));
-
-            setTimeout(() => {
-                // Reload page to clear React memory without losing the current message thread state
-                window.location.reload();
-            }, 3000);
-            return; // Script sẽ dừng chờ page xả bộ nhớ và auto-resume sau
-        }
-
-        console.log(`⏱️ Chờ ${delay / 1000}s rồi click người tiếp theo (${currentMessageIndex + 1}/${totalMessages === 9999 ? 'Tất cả' : totalMessages})...`);
-
-        messageTimeout = setTimeout(() => {
-            console.log('🔄 Bắt đầu xử lý người tiếp theo...');
-            clickAndSendMessage();
-        }, delay);
-    }
-
-    function stopBulkMessage() {
-        console.log('🛑 stopBulkMessage() được gọi');
-        isSendingMessages = false;
-        if (messageTimeout) {
-            clearTimeout(messageTimeout);
-            messageTimeout = null;
-        }
-        
-        // Hủy trạng thái chạy
-        StorageHelper.get(['bulkMsgState']).then((res) => {
-            if (res.bulkMsgState) {
-                res.bulkMsgState.isRunning = false;
-                StorageHelper.set({ bulkMsgState: res.bulkMsgState });
-            }
-        }).catch(e => console.error("Lỗi hủy trạng thái:", e));
-    }
-
-    // ========== AUTO RESUME CHỐNG CRASH ==========
-    async function checkAndResumeBulkMessage() {
-        try {
-            const res = await StorageHelper.get(['bulkMsgState']);
-            const state = res.bulkMsgState;
-            
-            if (state && state.isRunning) {
-                console.log("🔄 Phát hiện phiên gửi tin nhắn đang dang dở. Đang khôi phục...");
-                
-                // Khôi phục bộ đệm
-                isSendingMessages = true;
-                messageToSend = state.messageToSend;
-                quotesArray = state.quotesArray;
-                useRandomQuotes = state.useRandomQuotes;
-                totalMessages = state.totalMessages;
-                currentMessageIndex = state.currentMessageIndex;
-                msgMinDelay = state.msgMinDelay;
-                msgMaxDelay = state.msgMaxDelay;
-                processedHrefs = state.processedHrefs || [];
-                
-                // Cố gắng tìm phần tử container. Nếu chưa có, đợi thêm 1 chút.
-                const tryResume = async (retries = 0) => {
-                    const list = getMessageItems();
-                    if (list.length === 0 && retries < 5) {
-                        setTimeout(() => tryResume(retries + 1), 2000);
-                        return;
-                    }
-
-                    console.log(`▶️ Tìm đến vị trí người chưa được nhắn tin...`);
-                    if (currentMessageIndex > 0) {
-                        // Cuộn sâu hơn để bắt kịp index hiện tại, dự trù mỗi cuộn 1200px ~ 15-20 người
-                        const requiredScrolls = Math.max(5, Math.ceil(currentMessageIndex / 10));
-                        await scrollToFindNewPerson(requiredScrolls + 10);
-                    }
-                    console.log("▶️ Đang tiếp tục gửi tin...");
-                    clickAndSendMessage();
-                };
-
-                setTimeout(tryResume, 8000); // Khởi động kiểm tra resume sau 8s
-            }
-        } catch (e) {
-            console.error('❌ Lỗi khi tự động resume:', e);
-        }
-    }
-
-    // Kích hoạt kiểm tra khôi phục khi trang tải xong
-    setTimeout(checkAndResumeBulkMessage, 4000);
-    setTimeout(checkAndResumeAIMode, 4500);
-
-    // ========== OPENROUTER AI MESSAGE GENERATION ==========
-    async function generateAIMessage(apiKey, systemPrompt, userPrompt, model, profile) {
-        try {
-            const defaultSystemPrompt = `Bạn là một người viết tin nhắn tán gái (gửi tin nhắn đầu tiên cho phụ nữ trên Tinder). Viết tin nhắn thân thiện, tự nhiên, hài hước nhẹ, phù hợp với văn hóa Việt Nam. Không quá 100 ký tự. Không dùng emoji quá nhiều.`;
-
-            const finalSystemPrompt = systemPrompt || defaultSystemPrompt;
-            const finalUserPrompt = userPrompt || 'Viết một tin nhắn mở đầu cho người này: {{profile}}. Viết bằng tiếng Việt, tự nhiên như đang chat thật.';
-            const finalModel = model || 'google/gemini-2.5-flash';
-            const prompt = finalUserPrompt.replace('{{profile}}', profile || 'một cô gái');
-
-            console.log(`[AI] Gọi model: ${finalModel} cho profile: "${prompt}"`);
-
-            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json',
-                    'HTTP-Referer': chrome.runtime.getURL(''),
-                    'X-Title': 'Tinder Auto Tool'
-                },
-                body: JSON.stringify({
-                    model: finalModel,
-                    messages: [
-                        { role: 'system', content: finalSystemPrompt },
-                        { role: 'user', content: prompt }
-                    ],
-                    max_tokens: 150,
-                    temperature: 0.9
-                })
-            });
-
-            if (!response.ok) {
-                let errorDetail = '';
-                try {
-                    const errorData = await response.json();
-                    console.error('[AI] OpenRouter error response:', errorData);
-                    // Try multiple error formats
-                    errorDetail = errorData.error?.message
-                        || errorData.error?.code
-                        || errorData.error?.type
-                        || JSON.stringify(errorData.error)
-                        || `HTTP ${response.status}`;
-                } catch (_) {
-                    errorDetail = `HTTP ${response.status}`;
-                }
-
-                // Map common errors to helpful Vietnamese messages
-                const errLower = errorDetail.toLowerCase();
-                if (errLower.includes('invalid_api_key') || errLower.includes('api key')) {
-                    return { success: false, error: 'API Key không hợp lệ! Vào tab AI để cập nhật.' };
-                }
-                if (errLower.includes('insufficient') || errLower.includes('credit')) {
-                    return { success: false, error: 'Hết credits! Vào openrouter.ai để nạp thêm.' };
-                }
-                if (errLower.includes('model') && errLower.includes('not found')) {
-                    return { success: false, error: `Model "${finalModel}" không khả dụng. Chọn model khác trong tab AI.` };
-                }
-                if (errLower.includes('context') && errLower.includes('length')) {
-                    return { success: false, error: 'Prompt quá dài. Giảm độ dài System Prompt.' };
-                }
-                return { success: false, error: `[${response.status}] ${errorDetail}` };
-            }
-
-            const data = await response.json();
-            const message = data.choices?.[0]?.message?.content?.trim();
-            if (!message) throw new Error('No message generated');
-            return { success: true, message };
-        } catch (error) {
-            console.error('[AI] generateAIMessage error:', error);
-            return { success: false, error: error.message };
-        }
-    }
-
-    function extractProfileInfo() {
-        let profileText = '';
-        const nameEl = document.querySelector('h1[class*="profile"], div[class*="profileName"], span[class*="matchName"]');
-        if (nameEl) {
-            profileText += nameEl.textContent.trim();
-        }
-        const bioSelectors = [
-            'div[class*="bio"] span',
-            'div[class*="Bio"] p',
-            'p[class*="bio"]',
-            'span[class*="bio"]',
-            'div[class*="description"]'
-        ];
-        for (const selector of bioSelectors) {
-            const els = document.querySelectorAll(selector);
-            els.forEach(el => {
-                const text = el.textContent.trim();
-                if (text && text.length > 10 && text.length < 500) {
-                    profileText += '. ' + text;
-                }
-            });
-        }
-        profileText = profileText.replace(/\s+/g, ' ').trim();
-        return profileText || 'một cô gái';
-    }
-
-    // ========== MESSAGE LISTENER ==========
-    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-        console.log('📩 Nhận message từ popup:', request.action);
-
-        switch (request.action) {
-            case 'startAutoClick':
-                startAutoClick(request.count, request.minDelay, request.maxDelay);
-                sendResponse({ started: true });
-                break;
-
-            case 'stopAutoClick':
-                stopAutoClick();
-                sendResponse({ stopped: true });
-                break;
-
-            case 'startBulkMessage':
-                if (request.aiMode) {
-                    startBulkMessageAIMode(
-                        request.openRouterApiKey,
-                        request.aiSystemPrompt,
-                        request.aiUserPrompt,
-                        request.aiModel,
-                        request.count,
-                        request.minDelay,
-                        request.maxDelay
-                    );
-                    sendResponse({ started: true });
-                } else {
-                    const started = startBulkMessage(
-                        request.message,
-                        request.quotes,
-                        request.useRandomQuotes,
-                        request.count,
-                        request.minDelay,
-                        request.maxDelay
-                    );
-                    sendResponse({ started: started });
-                }
-                break;
-
-            case 'stopBulkMessage':
-                stopBulkMessage();
-                sendResponse({ stopped: true });
-                break;
-
-            case 'generateProfileAIMessage':
-                return (async () => {
-                    try {
-                        const profileInfo = extractProfileInfo();
-                        const result = await generateAIMessage(
-                            request.apiKey,
-                            request.systemPrompt,
-                            request.userPrompt,
-                            request.model,
-                            profileInfo
-                        );
-                        if (result.success) {
-                            return { success: true, message: result.message };
-                        } else {
-                            return { success: false, error: result.error };
-                        }
-                    } catch (e) {
-                        return { success: false, error: e.message };
-                    }
-                })();
-
-            case 'getHistory':
-                getMessageHistory().then(history => {
-                    sendResponse({ history: history });
-                });
-                return true;
-
-            case 'clearHistory':
-                clearMessageHistory().then(() => {
-                    sendResponse({ cleared: true });
-                });
-                return true;
-        }
-
-        return true;
+    // Initial render
+    renderQuotes(currentSlot);
+
+    // Tab switching
+    menu.querySelectorAll(".quote-tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        menu
+          .querySelectorAll(".quote-tab")
+          .forEach((t) => t.classList.remove("active"));
+        tab.classList.add("active");
+        renderQuotes(tab.dataset.slot);
+      });
     });
 
-    // ========== AI BULK MESSAGE MODE ==========
-    async function startBulkMessageAIMode(apiKey, systemPrompt, userPrompt, model, count, minDelay, maxDelay) {
+    // Quote click - insert to textarea
+    menu.querySelector(".quote-list").addEventListener("click", (e) => {
+      if (e.target.classList.contains("quote-item")) {
+        const quote = e.target.dataset.quote;
+        insertQuoteToTextarea(quote);
+        menu.classList.remove("show");
+      }
+    });
+
+    // Toggle menu
+    btn.addEventListener("click", () => {
+      menu.classList.toggle("show");
+    });
+
+    // Close button
+    menu.querySelector(".quote-menu-close").addEventListener("click", () => {
+      menu.classList.remove("show");
+    });
+
+    // Close on outside click
+    document.addEventListener("click", (e) => {
+      if (!menu.contains(e.target) && e.target !== btn) {
+        menu.classList.remove("show");
+      }
+    });
+
+    console.log("✅ Quote UI đã được tạo!");
+  }
+
+  function insertQuoteToTextarea(quote) {
+    const textarea = document.querySelector(TEXTAREA_SELECTOR);
+    if (textarea) {
+      textarea.focus();
+      setReactTextareaValue(textarea, quote);
+      console.log("✅ Đã chèn quote:", quote);
+    } else {
+      alert("Vui lòng mở một cuộc trò chuyện trước!");
+    }
+  }
+
+  // Initialize UI when page loads
+  setTimeout(createFloatingQuoteUI, 1500);
+
+  // ========== GAMEPAD AUTO CLICK ==========
+  let autoClickTimeout = null;
+  let isRunning = false;
+  let currentClick = 0;
+  let totalClicks = 0;
+  let minDelayMs = 1000;
+  let maxDelayMs = 3000;
+
+  function getRandomDelay(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function clickGamepadIcon() {
+    // Target the Like button specifically (has sparks-like class)
+    const likeButton = document.querySelector(
+      'button[class*="gamepad-sparks-like"]',
+    );
+    if (likeButton) {
+      likeButton.click();
+      console.log("💚 Clicked LIKE button");
+      return true;
+    }
+
+    // Fallback: try to find by the wrapper class with like styling
+    const likeWrapper = document.querySelector(
+      '.gamepad-button-wrapper button[class*="sparks-like"]',
+    );
+    if (likeWrapper) {
+      likeWrapper.click();
+      console.log("💚 Clicked LIKE button (fallback)");
+      return true;
+    }
+
+    console.log("❌ Like button not found");
+    return false;
+  }
+
+  function startAutoClick(count, minDelay, maxDelay) {
+    stopAutoClick();
+    currentClick = 0;
+    totalClicks = count;
+    minDelayMs = minDelay;
+    maxDelayMs = maxDelay;
+    isRunning = true;
+    console.log(
+      `🚀 Auto click: ${count} lần, delay ${minDelay / 1000}s - ${maxDelay / 1000}s`,
+    );
+    performClick();
+  }
+
+  function scheduleNextClick() {
+    if (!isRunning || currentClick >= totalClicks) return;
+    const delay = getRandomDelay(minDelayMs, maxDelayMs);
+    autoClickTimeout = setTimeout(performClick, delay);
+  }
+
+  function performClick() {
+    if (!isRunning || currentClick >= totalClicks) {
+      stopAutoClick();
+      chrome.runtime.sendMessage({ action: "completed", total: currentClick });
+      return;
+    }
+
+    if (clickGamepadIcon()) {
+      currentClick++;
+      chrome.runtime.sendMessage({
+        action: "updateProgress",
+        current: currentClick,
+        total: totalClicks,
+      });
+      scheduleNextClick();
+    } else {
+      stopAutoClick();
+      chrome.runtime.sendMessage({
+        action: "error",
+        message: "Không tìm thấy gamepad icon!",
+      });
+    }
+  }
+
+  function stopAutoClick() {
+    isRunning = false;
+    if (autoClickTimeout) {
+      clearTimeout(autoClickTimeout);
+      autoClickTimeout = null;
+    }
+  }
+
+  // ========== BULK MESSAGE ==========
+  let isSendingMessages = false;
+  let messageTimeout = null;
+  let currentMessageIndex = 0;
+  let totalMessages = 0;
+  let messageToSend = "";
+  let quotesArray = [];
+  let useRandomQuotes = false;
+  let msgMinDelay = 3000;
+  let msgMaxDelay = 5000;
+  let processedHrefs = [];
+  let messageTargetQueue = [];
+  const MESSAGE_PAGE_RELOAD_INTERVAL = 10;
+
+  // ========== STORAGE HELPER ==========
+  // StorageHelper is loaded from lib/storage-helper.js (declared globally before this script).
+
+  // ========== MESSAGE HISTORY ==========
+  // Lưu lịch sử tin nhắn đã gửi
+  async function saveMessageHistory(name, message) {
+    try {
+      const result = await StorageHelper.get(["messageHistory"]);
+      const history = result.messageHistory || [];
+
+      history.unshift({
+        name: name,
+        message: message,
+        timestamp: new Date().toISOString(),
+        date: new Date().toLocaleString("vi-VN"),
+      });
+
+      // Giới hạn 500 bản ghi
+      if (history.length > 500) {
+        history.splice(500);
+      }
+
+      await StorageHelper.set({ messageHistory: history });
+      console.log(`📝 Đã lưu lịch sử: ${name}`);
+    } catch (e) {
+      console.error("❌ Lỗi lưu lịch sử:", e);
+    }
+  }
+
+  // Lấy lịch sử tin nhắn
+  async function getMessageHistory() {
+    const result = await StorageHelper.get(["messageHistory"]);
+    return result.messageHistory || [];
+  }
+
+  // Xóa lịch sử
+  async function clearMessageHistory() {
+    await StorageHelper.set({ messageHistory: [] });
+    console.log("🗑️ Đã xóa lịch sử");
+  }
+
+  // Lấy tin nhắn cho người thứ N (mỗi người 1 quote khác nhau)
+  function getMessageForPerson(index) {
+    if (useRandomQuotes && quotesArray.length > 0) {
+      // Lấy quote theo index, nếu hết thì quay vòng lại từ đầu
+      const quoteIndex = index % quotesArray.length;
+      return quotesArray[quoteIndex];
+    }
+    return messageToSend;
+  }
+
+  function isScrollableElement(element) {
+    if (
+      !element ||
+      element === document.body ||
+      element === document.documentElement
+    )
+      return { started: false, error: "Không tìm thấy danh sách tin nhắn!" };
+    const style = window.getComputedStyle(element);
+    const overflowY = style.overflowY;
+    const canScrollByStyle =
+      overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay";
+    return canScrollByStyle && element.scrollHeight > element.clientHeight + 4;
+  }
+
+  function findScrollableParent(element) {
+    let current = element;
+    while (
+      current &&
+      current !== document.body &&
+      current !== document.documentElement
+    ) {
+      if (isScrollableElement(current)) return current;
+      current = current.parentElement;
+    }
+    return null;
+  }
+
+  // Lấy danh sách message items từ sidebar
+  function getMessageItems() {
+    // Thử nhiều selector khác nhau
+    let items = document.querySelectorAll(
+      ".messageList ul li > a.messageListItem",
+    );
+    if (items.length === 0) {
+      items = document.querySelectorAll(
+        'ul[aria-label="Your recent messages"] li > a',
+      );
+    }
+    if (items.length === 0) {
+      items = document.querySelectorAll("a.messageListItem");
+    }
+    console.log(`📋 Tìm thấy ${items.length} items trong sidebar`);
+    return Array.from(items);
+  }
+
+  // Lấy container scroll của message list
+  function getMessageListContainer() {
+    const items = getMessageItems();
+    if (items.length > 0) {
+      const fromItem = findScrollableParent(items[0]);
+      if (fromItem) {
+        return fromItem;
+      }
+    }
+
+    const candidates = [
+      document.querySelector('ul[aria-label="Your recent messages"]'),
+      document.querySelector(".messageList"),
+      document.querySelector('[class*="MessageList"]'),
+      document.querySelector('[class*="messageList"]'),
+    ].filter(Boolean);
+
+    for (const candidate of candidates) {
+      const scrollable = isScrollableElement(candidate)
+        ? candidate
+        : findScrollableParent(candidate);
+      if (scrollable) {
+        return scrollable;
+      }
+    }
+
+    return null;
+  }
+
+  // Cuộn xuống cho đến khi tìm thấy tin nhắn chưa được xử lý hoặc chạm đáy danh sách
+  async function scrollToFindNewPerson() {
+    const container = getMessageListContainer();
+    if (!container) {
+      console.log("⚠️ Không tìm thấy container để scroll");
+      return {
+        started: false,
+        error: "Không quét được danh sách người cần nhắn tin!",
+      };
+    }
+
+    console.log(`📜 Đang scroll để tìm người nhắn mới...`);
+
+    let stagnantScrolls = 0;
+
+    let attempts = 0;
+
+    while (true) {
+      const items = getMessageItems();
+
+      // Check if there is any item not in processedHrefs
+      const hasNew = items.some(
+        (item) => item && item.href && !processedHrefs.includes(item.href),
+      );
+      if (hasNew) {
+        console.log(`✅ Đã tìm thấy người mới sau ${attempts} lần cuộn.`);
+        return true;
+      }
+
+      const reachedBottom =
+        container.scrollTop + container.clientHeight >=
+        container.scrollHeight - 2;
+      if (reachedBottom) {
+        console.log("⚠️ Đã chạm đáy danh sách, không còn item mới để load.");
+        return false;
+      }
+
+      const beforeScrollTop = container.scrollTop;
+      container.scrollBy({
+        top: Math.max(container.clientHeight * 0.9, 800),
+        behavior: "auto",
+      });
+      attempts++;
+      // Đợi load để React kịp render layout, tránh layout thrashing
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      if (container.scrollTop === beforeScrollTop) {
+        stagnantScrolls++;
+        if (stagnantScrolls >= 3) {
+          console.log("⚠️ Scroll không còn tiến triển, dừng tìm thêm.");
+          return false;
+        }
+      } else {
+        stagnantScrolls = 0;
+      }
+    }
+  }
+
+  // Scroll item vào view
+  function scrollItemIntoView(item) {
+    if (item) {
+      item.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }
+
+  function getTargetName(item) {
+    return (
+      item?.getAttribute("aria-label") ||
+      item?.querySelector(".messageListItem__name")?.textContent?.trim() ||
+      ""
+    );
+  }
+
+  function syncProcessedHrefsFromQueue() {
+    processedHrefs = messageTargetQueue
+      .slice(0, currentMessageIndex)
+      .map((target) => target.href)
+      .filter(Boolean);
+  }
+
+  async function persistBulkMessageState(extra = {}) {
+    const result = await StorageHelper.get(["bulkMsgState"]);
+    if (!result.bulkMsgState || !result.bulkMsgState.isRunning) return;
+
+    syncProcessedHrefsFromQueue();
+    const nextState = {
+      ...result.bulkMsgState,
+      currentMessageIndex,
+      totalMessages,
+      msgMinDelay,
+      msgMaxDelay,
+      processedHrefs,
+      messageTargetQueue,
+      ...extra,
+    };
+    await StorageHelper.set({ bulkMsgState: nextState });
+  }
+
+  function shouldReloadMessagePage() {
+    return (
+      currentMessageIndex > 0 &&
+      currentMessageIndex < totalMessages &&
+      currentMessageIndex % MESSAGE_PAGE_RELOAD_INTERVAL === 0
+    );
+  }
+
+  function scheduleStabilityReload(reason) {
+    console.log(
+      `🧹 Reload trang message để tránh crash sau ${currentMessageIndex} lượt (${reason}).`,
+    );
+
+    messageTimeout = setTimeout(() => {
+      window.location.reload();
+    }, 1500);
+  }
+
+  async function rebuildMessageTargetQueue(limit = 0) {
+    const refreshedQueue = await collectAllMessageTargets(limit);
+    if (!Array.isArray(refreshedQueue) || refreshedQueue.length === 0) {
+      return null;
+    }
+
+    messageTargetQueue = refreshedQueue;
+    totalMessages = refreshedQueue.length;
+    syncProcessedHrefsFromQueue();
+    await persistBulkMessageState();
+    return refreshedQueue;
+  }
+
+  async function collectAllMessageTargets(limit = 0) {
+    const container = getMessageListContainer();
+    if (!container) {
+      console.log(
+        "⚠️ Không tìm thấy container message list để quét toàn bộ danh sách.",
+      );
+      return [];
+    }
+
+    const collected = [];
+    const seen = new Set();
+    let stagnantRounds = 0;
+    let bottomConfirmations = 0;
+    let lastVisibleSignature = "";
+
+    while (true) {
+      const items = getMessageItems();
+      items.forEach((item) => {
+        if (!item?.href || seen.has(item.href)) return;
+        seen.add(item.href);
+        collected.push({
+          href: item.href,
+          name: getTargetName(item),
+        });
+      });
+
+      if (limit > 0 && collected.length >= limit) {
+        console.log(`✅ Đã quét đủ ${limit} người từ danh sách message.`);
+        return collected.slice(0, limit);
+      }
+
+      const visibleSignature = items
+        .map((item) => item?.href || "")
+        .filter(Boolean)
+        .join("|");
+      const reachedBottom =
+        container.scrollTop + container.clientHeight >=
+        container.scrollHeight - 2;
+      if (reachedBottom) {
+        bottomConfirmations =
+          visibleSignature === lastVisibleSignature
+            ? bottomConfirmations + 1
+            : 1;
+        if (bottomConfirmations >= 3) {
+          console.log(
+            `✅ Quét xong toàn bộ danh sách message: ${collected.length} người.`,
+          );
+          return collected;
+        }
+      } else {
+        bottomConfirmations = 0;
+      }
+
+      const beforeScrollTop = container.scrollTop;
+      container.scrollBy({
+        top: Math.max(container.clientHeight * 0.9, 800),
+        behavior: "auto",
+      });
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+
+      if (
+        container.scrollTop === beforeScrollTop &&
+        visibleSignature === lastVisibleSignature
+      ) {
+        stagnantRounds++;
+        if (stagnantRounds >= 3) {
+          console.log(
+            `⚠️ Scroll không tiến triển thêm. Dùng danh sách đã quét được: ${collected.length} người.`,
+          );
+          return collected;
+        }
+      } else {
+        stagnantRounds = 0;
+      }
+
+      lastVisibleSignature = visibleSignature;
+    }
+  }
+
+  async function scrollMessageListToTop() {
+    const container = getMessageListContainer();
+    if (!container) return;
+    container.scrollTo({ top: 0, behavior: "auto" });
+    await new Promise((resolve) => setTimeout(resolve, 600));
+  }
+
+  function findMessageItemByHref(targetHref) {
+    return getMessageItems().find((item) => item?.href === targetHref) || null;
+  }
+
+  async function ensureMessageItemVisible(targetHref) {
+    const container = getMessageListContainer();
+    if (!container) return null;
+
+    let stagnantRounds = 0;
+    for (let attempt = 0; attempt < 200; attempt++) {
+      const item = findMessageItemByHref(targetHref);
+      if (item) {
+        return item;
+      }
+
+      const beforeScrollTop = container.scrollTop;
+      container.scrollBy({
+        top: Math.max(container.clientHeight * 0.9, 800),
+        behavior: "auto",
+      });
+      await new Promise((resolve) => setTimeout(resolve, 900));
+
+      if (container.scrollTop === beforeScrollTop) {
+        stagnantRounds++;
+        if (stagnantRounds >= 3) {
+          break;
+        }
+      } else {
+        stagnantRounds = 0;
+      }
+    }
+
+    return null;
+  }
+
+  // Wait for textarea value to actually be set (React state sync)
+  function waitForTextareaValue(textarea, expectedValue, maxWait = 3000) {
+    return new Promise((resolve) => {
+      if (textarea.value === expectedValue) {
+        resolve(true);
+        return;
+      }
+      const start = Date.now();
+      const check = () => {
+        if (textarea.value === expectedValue) {
+          resolve(true);
+          return;
+        }
+        if (Date.now() - start > maxWait) {
+          console.log(
+            `⚠️ Timeout chờ textarea value. Current: "${textarea.value}", Expected: "${expectedValue}"`,
+          );
+          resolve(false);
+          return;
+        }
+        setTimeout(check, 100);
+      };
+      check();
+    });
+  }
+
+  async function startBulkMessage(
+    message,
+    quotes,
+    useRandom,
+    count,
+    minDelay,
+    maxDelay,
+    aiConfig, // optional: { apiKey, systemPrompt, userPrompt, model }
+  ) {
+    stopBulkMessage();
+
+    const isAI = !!(aiConfig?.apiKey);
+    messageToSend = message;
+    quotesArray = quotes || [];
+    useRandomQuotes = useRandom || false;
+    msgMinDelay = minDelay;
+    msgMaxDelay = maxDelay;
+
+    const items = getMessageItems();
+    if (items.length === 0) {
+      chrome.runtime.sendMessage({ action: "error", message: "Kh\u00f4ng t\u00ecm th\u1ea5y danh s\u00e1ch tin nh\u1eafn!" });
+      return { started: false, error: "Kh\u00f4ng t\u00ecm th\u1ea5y danh s\u00e1ch tin nh\u1eafn!" };
+    }
+
+    messageTargetQueue = await collectAllMessageTargets(count > 0 ? count : 0);
+    if (messageTargetQueue.length === 0) {
+      chrome.runtime.sendMessage({ action: "error", message: "Kh\u00f4ng qu\u00e9t \u0111\u01b0\u1ee3c danh s\u00e1ch ng\u01b0\u1eddi c\u1ea7n nh\u1eafn tin!" });
+      return { started: false, error: "Kh\u00f4ng qu\u00e9t \u0111\u01b0\u1ee3c danh s\u00e1ch ng\u01b0\u1eddi c\u1ea7n nh\u1eafn tin!" };
+    }
+
+    totalMessages = messageTargetQueue.length;
+    currentMessageIndex = 0;
+    processedHrefs = [];
+    isSendingMessages = true;
+    await scrollMessageListToTop();
+
+    const state = {
+      isRunning: true,
+      aiMode: isAI,
+      messageToSend,
+      quotesArray,
+      useRandomQuotes,
+      totalMessages,
+      currentMessageIndex: 0,
+      msgMinDelay,
+      msgMaxDelay,
+      processedHrefs: [],
+      messageTargetQueue,
+      ...(isAI && {
+        openRouterApiKey: aiConfig.apiKey,
+        aiSystemPrompt: aiConfig.systemPrompt,
+        aiUserPrompt: aiConfig.userPrompt,
+        aiModel: aiConfig.model,
+      }),
+    };
+    await StorageHelper.set({ bulkMsgState: state });
+
+    console.log(`\ud83d\udce8 B\u1eaft \u0111\u1ea7u g\u1eedi ${isAI ? "AI" : "bulk"} tin nh\u1eafn cho ${totalMessages} ng\u01b0\u1eddi`);
+
+    const resolver = isAI
+      ? async (index, name) => {
+          const profile = extractProfileInfo() || name;
+          const result = await generateAIMessage(
+            aiConfig.apiKey, aiConfig.systemPrompt, aiConfig.userPrompt, aiConfig.model, profile,
+          );
+          if (!result.success) {
+            console.error("[AI] L\u1ed7i t\u1ea1o tin nh\u1eafn:", result.error);
+            return null;
+          }
+          return result.message;
+        }
+      : async (index) => getMessageForPerson(index);
+
+    clickAndSendMessage(resolver);
+    return { started: true, totalCollected: totalMessages };
+  }
+
+
+  // Hàm chính: click vào item và gửi tin nhắn (cả hai mode)
+  function clickAndSendMessage(resolver) {
+    if (!isSendingMessages) {
+      console.log("⚠️ Đã bị dừng");
+      return;
+    }
+
+    if (currentMessageIndex >= totalMessages) {
+      console.log("✅ Hoàn thành tất cả!");
+      stopBulkMessage();
+      chrome.runtime.sendMessage({ action: "completed", total: currentMessageIndex });
+      return;
+    }
+
+    persistBulkMessageState().catch((e) => console.error("Lỗi lưu tiến trình:", e));
+    processCurrentItemUnified(resolver);
+  }
+
+  // Xử lý item hiện tại — resolver là async (index, name) => string
+  async function processCurrentItemUnified(resolver) {
+    const target = messageTargetQueue[currentMessageIndex];
+    if (!target?.href) {
+      console.log("⚠️ Queue không còn target hợp lệ.");
+      stopBulkMessage();
+      chrome.runtime.sendMessage({ action: "completed", total: currentMessageIndex });
+      return;
+    }
+
+    let currentItem = findMessageItemByHref(target.href);
+    if (!currentItem) currentItem = await ensureMessageItemVisible(target.href);
+    if (!currentItem) {
+      const rebuiltQueue = await rebuildMessageTargetQueue(totalMessages > 0 ? totalMessages : 0);
+      if (rebuiltQueue?.some((item) => item.href === target.href)) {
+        await scrollMessageListToTop();
+        currentItem = findMessageItemByHref(target.href) ||
+          await ensureMessageItemVisible(target.href);
+      }
+    }
+    if (!currentItem) {
+      console.log(`⚠️ Không tìm thấy target sau khi quét queue: ${target.href}`);
+      currentMessageIndex++;
+      syncProcessedHrefsFromQueue();
+      await persistBulkMessageState();
+      chrome.runtime.sendMessage({ action: "updateProgress", current: currentMessageIndex, total: totalMessages });
+      scheduleNextPerson(resolver);
+      return;
+    }
+
+    const name = target.name || getTargetName(currentItem) || `Person ${currentMessageIndex + 1}`;
+    console.log(`\n========================================`);
+    console.log(`📩 [${currentMessageIndex + 1}/${totalMessages}] Đang xử lý: ${name}`);
+    console.log(`========================================`);
+
+    scrollItemIntoView(currentItem);
+
+    setTimeout(() => {
+      currentItem.click();
+
+      setTimeout(async () => {
+        const textarea = document.querySelector(TEXTAREA_SELECTOR);
+        if (!textarea) {
+          console.log("❌ Không tìm thấy textarea, bỏ qua người này");
+          currentMessageIndex++;
+          syncProcessedHrefsFromQueue();
+          await persistBulkMessageState();
+          chrome.runtime.sendMessage({ action: "updateProgress", current: currentMessageIndex, total: totalMessages });
+          scheduleNextPerson(resolver);
+          return;
+        }
+
+        const currentMessage = await resolver(currentMessageIndex, name);
+        if (!currentMessage) {
+          console.log("❌ Không lấy được tin nhắn từ resolver, bỏ qua người này");
+          currentMessageIndex++;
+          syncProcessedHrefsFromQueue();
+          await persistBulkMessageState();
+          chrome.runtime.sendMessage({ action: "updateProgress", current: currentMessageIndex, total: totalMessages });
+          scheduleNextPerson(resolver);
+          return;
+        }
+
+        textarea.focus();
+        setReactTextareaValue(textarea, currentMessage);
+        console.log(`✅ Đã nhập tin nhắn [${currentMessageIndex + 1}]:`, currentMessage);
+
+        waitForTextareaValue(textarea, currentMessage, 3000).then(async (synced) => {
+          if (!synced) console.log("⚠️ Textarea chưa sync, vẫn tiếp tục gửi...");
+
+          const sendButton = document.querySelector('button[type="submit"]');
+          if (sendButton) {
+            sendButton.click();
+            saveMessageHistory(name, currentMessage);
+          } else {
+            console.log("❌ Không tìm thấy nút SEND");
+          }
+
+          currentMessageIndex++;
+          syncProcessedHrefsFromQueue();
+          await persistBulkMessageState();
+          chrome.runtime.sendMessage({ action: "updateProgress", current: currentMessageIndex, total: totalMessages });
+          scheduleNextPerson(resolver);
+        });
+      }, 2000);
+    }, 300);
+  }
+
+
+  // Lên lịch xử lý người tiếp theo — resolver được truyền lại cho vòng lặp tiếp theo
+  function scheduleNextPerson(resolver) {
+    if (!isSendingMessages) return;
+
+    if (currentMessageIndex >= totalMessages) {
+      console.log("🎉 Đã hoàn thành tất cả!");
+      stopBulkMessage();
+      chrome.runtime.sendMessage({ action: "completed", total: currentMessageIndex });
+      return;
+    }
+
+    if (shouldReloadMessagePage()) {
+      scheduleStabilityReload("bulk message");
+      return;
+    }
+
+    const delay = getRandomDelay(msgMinDelay, msgMaxDelay);
+    console.log(`⏱️ Chờ ${delay / 1000}s rồi xử lý người tiếp theo (${currentMessageIndex + 1}/${totalMessages === 9999 ? "Tất cả" : totalMessages})...`);
+    messageTimeout = setTimeout(() => clickAndSendMessage(resolver), delay);
+  }
+
+
+  function stopBulkMessage() {
+    console.log("🛑 stopBulkMessage() được gọi");
+    isSendingMessages = false;
+    if (messageTimeout) {
+      clearTimeout(messageTimeout);
+      messageTimeout = null;
+    }
+
+    // Hủy trạng thái chạy
+    StorageHelper.get(["bulkMsgState"])
+      .then((res) => {
+        if (res.bulkMsgState) {
+          res.bulkMsgState.isRunning = false;
+          StorageHelper.set({ bulkMsgState: res.bulkMsgState });
+        }
+      })
+      .catch((e) => console.error("Lỗi hủy trạng thái:", e));
+  }
+
+  // ========== AUTO RESUME CHỐNG CRASH ==========
+  async function checkAndResumeSession() {
+    try {
+      const res = await StorageHelper.get(["bulkMsgState"]);
+      const state = res.bulkMsgState;
+
+      if (!state || !state.isRunning) return;
+
+      console.log("🔄 Phát hiện phiên gửi tin nhắn đang dở. Đang khôi phục...");
+
+      isSendingMessages = true;
+      messageToSend = state.messageToSend || "";
+      quotesArray = Array.isArray(state.quotesArray) ? state.quotesArray : [];
+      useRandomQuotes = state.useRandomQuotes || false;
+      totalMessages = state.totalMessages;
+      currentMessageIndex = state.currentMessageIndex || 0;
+      msgMinDelay = state.msgMinDelay || 3000;
+      msgMaxDelay = state.msgMaxDelay || 5000;
+      messageTargetQueue = Array.isArray(state.messageTargetQueue) ? state.messageTargetQueue : [];
+      syncProcessedHrefsFromQueue();
+
+      console.log(`📋 Đã khôi phục: Mode AI=${state.aiMode}, index=${currentMessageIndex}, processed=${processedHrefs.length}, queue=${messageTargetQueue.length}`);
+
+      const tryResume = async (retries = 0) => {
+        const list = getMessageItems();
+        if (list.length === 0 && retries < 5) {
+          console.log(`⏳ Chờ message list load... (thử lần ${retries + 1})`);
+          setTimeout(() => tryResume(retries + 1), 2000);
+          return;
+        }
+
+        if (messageTargetQueue.length === 0) {
+          messageTargetQueue = await collectAllMessageTargets(totalMessages > 0 ? totalMessages : 0);
+          totalMessages = messageTargetQueue.length;
+          syncProcessedHrefsFromQueue();
+          await persistBulkMessageState();
+        }
+        await scrollMessageListToTop();
+        console.log("▶️ Đang tiếp tục gửi tin...");
+        
+        const resolver = state.aiMode
+          ? async (index, name) => {
+              const profile = extractProfileInfo() || name;
+              const result = await generateAIMessage(
+                state.openRouterApiKey, state.aiSystemPrompt, state.aiUserPrompt, state.aiModel, profile,
+              );
+              if (!result.success) {
+                console.error("[AI] Lỗi tạo tin nhắn:", result.error);
+                return null;
+              }
+              return result.message;
+            }
+          : async (index) => getMessageForPerson(index);
+
+        clickAndSendMessage(resolver);
+      };
+
+      setTimeout(tryResume, 8000);
+    } catch (e) {
+      console.error("❌ Lỗi khi tự động resume:", e);
+    }
+  }
+
+  // Kích hoạt kiểm tra khôi phục khi trang tải xong
+  setTimeout(checkAndResumeSession, 4000);
+
+  // ========== AI MESSAGE GENERATION ==========
+  // Delegates to OpenRouter (lib/openrouter.js), loaded before this script.
+  function generateAIMessage(apiKey, systemPrompt, userPrompt, model, profile) {
+    return OpenRouter.generateMessage(apiKey, { model, systemPrompt, userPrompt, profile });
+  }
+
+  function extractProfileInfo() {
+    let profileText = "";
+    const nameEl = document.querySelector(
+      'h1[class*="profile"], div[class*="profileName"], span[class*="matchName"]',
+    );
+    if (nameEl) {
+      profileText += nameEl.textContent.trim();
+    }
+    const bioSelectors = [
+      'div[class*="bio"] span',
+      'div[class*="Bio"] p',
+      'p[class*="bio"]',
+      'span[class*="bio"]',
+      'div[class*="description"]',
+    ];
+    for (const selector of bioSelectors) {
+      const els = document.querySelectorAll(selector);
+      els.forEach((el) => {
+        const text = el.textContent.trim();
+        if (text && text.length > 10 && text.length < 500) {
+          profileText += ". " + text;
+        }
+      });
+    }
+    profileText = profileText.replace(/\s+/g, " ").trim();
+    return profileText || "một cô gái";
+  }
+
+  // ========== MESSAGE LISTENER ==========
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log("📩 Nhận message từ popup:", request.action);
+
+    switch (request.action) {
+      case "startAutoClick":
+        startAutoClick(request.count, request.minDelay, request.maxDelay);
+        sendResponse({ started: true });
+        break;
+
+      case "stopAutoClick":
+        stopAutoClick();
+        sendResponse({ stopped: true });
+        break;
+
+      case "startBulkMessage":
+        (async () => {
+          try {
+            if (request.aiMode) {
+              const aiConfig = {
+                apiKey: request.openRouterApiKey,
+                systemPrompt: request.aiSystemPrompt,
+                userPrompt: request.aiUserPrompt,
+                model: request.aiModel
+              };
+              const result = await startBulkMessage(
+                "", // message
+                [], // quotes
+                false, // useRandom
+                request.count,
+                request.minDelay,
+                request.maxDelay,
+                aiConfig
+              );
+              sendResponse(result);
+            } else {
+              const result = await startBulkMessage(
+                request.message,
+                request.quotes,
+                request.useRandomQuotes,
+                request.count,
+                request.minDelay,
+                request.maxDelay,
+              );
+              sendResponse(result);
+            }
+          } catch (e) {
+            sendResponse({ started: false, error: e.message });
+          }
+        })();
+        return true;
+
+      case "stopBulkMessage":
         stopBulkMessage();
-        msgMinDelay = minDelay;
-        msgMaxDelay = maxDelay;
+        sendResponse({ stopped: true });
+        break;
 
-        const items = getMessageItems();
-        if (items.length === 0) {
-            chrome.runtime.sendMessage({ action: 'error', message: 'Không tìm thấy danh sách tin nhắn!' });
-            return;
-        }
-
-        totalMessages = count > 0 ? count : 9999;
-        currentMessageIndex = 0;
-        processedHrefs = [];
-        isSendingMessages = true;
-
-        const state = {
-            isRunning: true,
-            aiMode: true,
-            openRouterApiKey: apiKey,
-            aiSystemPrompt: systemPrompt,
-            aiUserPrompt: userPrompt,
-            aiModel: model || 'google/gemini-2.5-flash',
-            totalMessages,
-            currentMessageIndex: 0,
-            msgMinDelay,
-            msgMaxDelay,
-            processedHrefs: []
-        };
-        StorageHelper.set({ bulkMsgState: state });
-
-        console.log(`🤖 Bắt đầu gửi tin nhắn AI (model: ${model}) cho ${totalMessages === 9999 ? 'tất cả' : totalMessages} người`);
-        clickAndSendMessageAIMode(apiKey, systemPrompt, userPrompt, model);
-    }
-
-    async function clickAndSendMessageAIMode(apiKey, systemPrompt, userPrompt, model) {
-        if (!isSendingMessages) return;
-        if (currentMessageIndex >= totalMessages) {
-            stopBulkMessage();
-            chrome.runtime.sendMessage({ action: 'completed', total: currentMessageIndex });
-            return;
-        }
-
-        StorageHelper.get(['bulkMsgState']).then((res) => {
-            if (res.bulkMsgState && res.bulkMsgState.isRunning) {
-                res.bulkMsgState.currentMessageIndex = currentMessageIndex;
-                res.bulkMsgState.processedHrefs = processedHrefs;
-                StorageHelper.set({ bulkMsgState: res.bulkMsgState });
+      case "generateProfileAIMessage":
+        return (async () => {
+          try {
+            const profileInfo = extractProfileInfo();
+            const result = await generateAIMessage(
+              request.apiKey,
+              request.systemPrompt,
+              request.userPrompt,
+              request.model,
+              profileInfo,
+            );
+            if (result.success) {
+              return { success: true, message: result.message };
+            } else {
+              return { success: false, error: result.error };
             }
-        }).catch(e => console.error('Lỗi lưu tiến trình:', e));
+          } catch (e) {
+            return { success: false, error: e.message };
+          }
+        })();
 
-        processCurrentItemAIMode(apiKey, systemPrompt, userPrompt, model);
+      case "getHistory":
+        getMessageHistory().then((history) => {
+          sendResponse({ history: history });
+        });
+        return true;
+
+      case "clearHistory":
+        clearMessageHistory().then(() => {
+          sendResponse({ cleared: true });
+        });
+        return true;
     }
 
-    async function processCurrentItemAIMode(apiKey, systemPrompt, userPrompt, model) {
-        const items = getMessageItems();
-        let targetItem = null;
-        for (let i = 0; i < items.length; i++) {
-            if (items[i] && items[i].href && !processedHrefs.includes(items[i].href)) {
-                targetItem = items[i];
-                break;
-            }
-        }
+    return true;
+  });
 
-        if (!targetItem) {
-            console.log('📜 Hết người mới, đang cuộn...');
-            const foundNew = await scrollToFindNewPerson(15);
-            if (!foundNew) {
-                stopBulkMessage();
-                chrome.runtime.sendMessage({ action: 'completed', total: currentMessageIndex });
-                return;
-            }
-            setTimeout(() => processCurrentItemAIMode(apiKey, systemPrompt, userPrompt, model), 1000);
-            return;
-        }
 
-        processedHrefs.push(targetItem.href);
-        const name = targetItem.getAttribute('aria-label') || `Person ${currentMessageIndex + 1}`;
 
-        console.log(`\n========================================`);
-        console.log(`🤖 [${currentMessageIndex + 1}/${totalMessages}] Xử lý: ${name}`);
-        console.log(`========================================`);
-
-        scrollItemIntoView(targetItem);
-
-        setTimeout(async () => {
-            targetItem.click();
-
-            setTimeout(async () => {
-                const textarea = document.querySelector('textarea[placeholder="Type a message"]');
-                if (!textarea) {
-                    console.log('❌ Không tìm thấy textarea');
-                    currentMessageIndex++;
-                    chrome.runtime.sendMessage({ action: 'updateProgress', current: currentMessageIndex, total: totalMessages });
-                    scheduleNextPersonAIMode(apiKey, systemPrompt, userPrompt, model);
-                    return;
-                }
-
-                const profileInfo = extractProfileInfo();
-                console.log('🤖 Profile:', profileInfo);
-
-                const result = await generateAIMessage(apiKey, systemPrompt, userPrompt, model, profileInfo);
-
-                if (!result.success) {
-                    console.log('❌ Lỗi AI:', result.error);
-                    chrome.runtime.sendMessage({ action: 'error', message: 'Lỗi AI: ' + result.error });
-                    scheduleNextPersonAIMode(apiKey, systemPrompt, userPrompt, model);
-                    return;
-                }
-
-                const aiMessage = result.message;
-                console.log('🤖 Generated:', aiMessage);
-
-                textarea.focus();
-                const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
-                nativeInputValueSetter.call(textarea, aiMessage);
-                textarea.dispatchEvent(new Event('input', { bubbles: true }));
-
-                setTimeout(() => {
-                    const sendButton = document.querySelector('button[type="submit"]');
-                    if (sendButton) {
-                        sendButton.click();
-                        saveMessageHistory(name, aiMessage);
-                    }
-                    currentMessageIndex++;
-                    chrome.runtime.sendMessage({ action: 'updateProgress', current: currentMessageIndex, total: totalMessages });
-                    scheduleNextPersonAIMode(apiKey, systemPrompt, userPrompt, model);
-                }, 800);
-            }, 2000);
-        }, 300);
-    }
-
-    function scheduleNextPersonAIMode(apiKey, systemPrompt, userPrompt, model) {
-        if (!isSendingMessages) return;
-        if (currentMessageIndex >= totalMessages) {
-            stopBulkMessage();
-            chrome.runtime.sendMessage({ action: 'completed', total: currentMessageIndex });
-            return;
-        }
-
-        if (currentMessageIndex > 0 && currentMessageIndex % 10 === 0) {
-            console.log(`🧹 Reload bộ nhớ sau ${currentMessageIndex} tin nhắn...`);
-            StorageHelper.get(['bulkMsgState']).then((res) => {
-                if (res.bulkMsgState && res.bulkMsgState.isRunning) {
-                    res.bulkMsgState.currentMessageIndex = currentMessageIndex;
-                    res.bulkMsgState.processedHrefs = processedHrefs;
-                    StorageHelper.set({ bulkMsgState: res.bulkMsgState });
-                }
-            });
-            setTimeout(() => { window.location.reload(); }, 3000);
-            return;
-        }
-
-        const delay = getRandomDelay(msgMinDelay, msgMaxDelay);
-        messageTimeout = setTimeout(() => {
-            clickAndSendMessageAIMode(apiKey, systemPrompt, userPrompt, model);
-        }, delay);
-    }
-
-    async function checkAndResumeAIMode() {
-        try {
-            const res = await StorageHelper.get(['bulkMsgState']);
-            const state = res.bulkMsgState;
-            if (state && state.isRunning && state.aiMode) {
-                console.log('🔄 Khôi phục phiên AI...');
-                isSendingMessages = true;
-                totalMessages = state.totalMessages;
-                currentMessageIndex = state.currentMessageIndex;
-                msgMinDelay = state.msgMinDelay;
-                msgMaxDelay = state.msgMaxDelay;
-                processedHrefs = state.processedHrefs || [];
-
-                const tryResume = async (retries = 0) => {
-                    const list = getMessageItems();
-                    if (list.length === 0 && retries < 5) {
-                        setTimeout(() => tryResume(retries + 1), 2000);
-                        return;
-                    }
-                    if (currentMessageIndex > 0) {
-                        await scrollToFindNewPerson(Math.max(5, Math.ceil(currentMessageIndex / 10)) + 10);
-                    }
-                    clickAndSendMessageAIMode(state.openRouterApiKey, state.aiSystemPrompt, state.aiUserPrompt, state.aiModel);
-                };
-                setTimeout(tryResume, 8000);
-            }
-        } catch (e) {
-            console.error('Lỗi resume AI:', e);
-        }
-    }
-
-    console.log('✅ Tinder Auto Tool sẵn sàng!');
+  console.log("✅ Tinder matches sẵn sàng!");
 } // End of else block - prevent duplicate injection

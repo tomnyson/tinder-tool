@@ -1,0 +1,25 @@
+{"sessionId":"6ed826","location":"popup.js:1","message":"SCRIPT_START","timestamp":1776532268758}
+{"sessionId":"6ed826","location":"popup.js:110","message":"AFTER_DEBOUNCE","timestamp":1776532268760}
+{"sessionId":"6ed826","location":"popup.js:AFTER_LOADCONFIG","message":"AFTER_loadAIConfig","data":{"sysVal":"Ban la mot nguoi viet tin nhan tan gai (gui tin nhan dau tien cho phu nu tren Ti","usrVal":"Viet mot tin nhan mo dau cho nguoi nay: {{profile}}. Viet bang tieng Viet, tu nh"},"timestamp":1776532268760}
+{"sessionId":"6ed826","location":"popup.js:1037","message":"LANG_INIT_START","timestamp":1776532268761}
+{"sessionId":"6ed826","location":"popup.js:1042","message":"LANG_INIT_DONE","timestamp":1776532268761}
+{"sessionId":"6ed826","location":"popup.js:loadAIConfig_sys","message":"LOADED_SYSTEM_PROMPT","data":{"value":"Bạn là chuyên gia tâm lý tinh tế. Chỉ trả về duy nhất 1 dòng text quan tâm sâu s"},"timestamp":1776532268761}
+{"sessionId":"6ed826","location":"popup.js:loadAIConfig_usr","message":"LOADED_USER_PROMPT","data":{"value":"Viết 1 tin nhắn cho [Ngữ cảnh/Thời điểm]. Ngắn gọn, chạm cảm xúc."},"timestamp":1776532268761}
+{"sessionId":"6ed826","location":"popup.js:applyLang_BEFORE","message":"BEFORE_OVERWRITE","data":{"sysBefore":"Bạn là chuyên gia tâm lý tinh tế. Chỉ trả về duy nhất 1 dòng text quan tâm sâu s","usrBefore":"Viết 1 tin nhắn cho [Ngữ cảnh/Thời điểm]. Ngắn gọn, chạm cảm xúc.","defaultSys":"Ban la mot nguoi viet tin nhan tan gai (gui tin nhan dau tien cho phu nu tren Ti"},"timestamp":1776532268779}
+{"sessionId":"6ed826","location":"popup.js:applyLang_AFTER","message":"AFTER_OVERWRITE","data":{"sysAfter":"Ban la mot nguoi viet tin nhan tan gai (gui tin nhan dau tien cho phu nu tren Ti","usrAfter":"Viet mot tin nhan mo dau cho nguoi nay: {profile}. Viet bang tieng Viet, tu nhie"},"timestamp":1776532268779}
+{"sessionId":"6ed826","location":"popup.js:SAVE_OK","message":"SAVED_TO_STORAGE","data":{"sysSaved":"test","usrSaved":"test"},"timestamp":1776532275272}
+{"sessionId":"6ed826","location":"popup.js:SAVE_OK","message":"SAVED_TO_STORAGE","data":{"sysSaved":"test","usrSaved":"test"},"timestamp":1776532276352}
+{"sessionId":"6ed826","location":"popup.js:1","message":"SCRIPT_START","timestamp":1776532276922}
+{"sessionId":"6ed826","location":"popup.js:110","message":"AFTER_DEBOUNCE","timestamp":1776532276923}
+{"sessionId":"6ed826","location":"popup.js:AFTER_LOADCONFIG","message":"AFTER_loadAIConfig","data":{"sysVal":"Ban la mot nguoi viet tin nhan tan gai (gui tin nhan dau tien cho phu nu tren Ti","usrVal":"Viet mot tin nhan mo dau cho nguoi nay: {{profile}}. Viet bang tieng Viet, tu nh"},"timestamp":1776532276924}
+{"sessionId":"6ed826","location":"popup.js:1037","message":"LANG_INIT_START","timestamp":1776532276924}
+{"sessionId":"6ed826","location":"popup.js:1042","message":"LANG_INIT_DONE","timestamp":1776532276924}
+{"sessionId":"6ed826","location":"popup.js:loadAIConfig_sys","message":"LOADED_SYSTEM_PROMPT","data":{"value":"test"},"timestamp":1776532276925}
+{"sessionId":"6ed826","location":"popup.js:loadAIConfig_usr","message":"LOADED_USER_PROMPT","data":{"value":"test"},"timestamp":1776532276925}
+{"sessionId":"6ed826","location":"popup.js:1","message":"SCRIPT_START","timestamp":1776532280823}
+{"sessionId":"6ed826","location":"popup.js:110","message":"AFTER_DEBOUNCE","timestamp":1776532280825}
+{"sessionId":"6ed826","location":"popup.js:AFTER_LOADCONFIG","message":"AFTER_loadAIConfig","data":{"sysVal":"Ban la mot nguoi viet tin nhan tan gai (gui tin nhan dau tien cho phu nu tren Ti","usrVal":"Viet mot tin nhan mo dau cho nguoi nay: {{profile}}. Viet bang tieng Viet, tu nh"},"timestamp":1776532280825}
+{"sessionId":"6ed826","location":"popup.js:1037","message":"LANG_INIT_START","timestamp":1776532280825}
+{"sessionId":"6ed826","location":"popup.js:1042","message":"LANG_INIT_DONE","timestamp":1776532280826}
+{"sessionId":"6ed826","location":"popup.js:loadAIConfig_sys","message":"LOADED_SYSTEM_PROMPT","data":{"value":"test"},"timestamp":1776532280826}
+{"sessionId":"6ed826","location":"popup.js:loadAIConfig_usr","message":"LOADED_USER_PROMPT","data":{"value":"test"},"timestamp":1776532280826}
