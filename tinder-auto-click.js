@@ -693,19 +693,28 @@ if (window.__tinderAutoToolLoaded) {
     }
     _lastPersistTime = now;
 
-    const result = await StorageHelper.get(["bulkMsgState"]);
-    if (!result.bulkMsgState || !result.bulkMsgState.isRunning) return;
+    try {
+      const result = await StorageHelper.get(["bulkMsgState"]);
+      // Nếu StorageHelper fail hoàn toàn, không crash mà bỏ qua persist
+      if (!result || typeof result !== 'object') {
+        console.warn('persistBulkMessageState — StorageHelper returned invalid result, skipping');
+        return;
+      }
+      if (!result.bulkMsgState || !result.bulkMsgState.isRunning) return;
 
-    const nextState = {
-      ...result.bulkMsgState,
-      currentMessageIndex,
-      totalMessages,
-      msgMinDelay,
-      msgMaxDelay,
-      processedHrefs,
-      ...extra,
-    };
-    await StorageHelper.set({ bulkMsgState: nextState });
+      const nextState = {
+        ...result.bulkMsgState,
+        currentMessageIndex,
+        totalMessages,
+        msgMinDelay,
+        msgMaxDelay,
+        processedHrefs,
+        ...extra,
+      };
+      await StorageHelper.set({ bulkMsgState: nextState });
+    } catch (e) {
+      console.error('persistBulkMessageState — failed:', e);
+    }
   }
 
   function shouldReloadMessagePage() {
