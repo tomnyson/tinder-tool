@@ -2,7 +2,7 @@
 
 **Input**: Design documents from `/specs/002-fix-browser-crash/`
 **Last Updated**: May 15, 2026
-**Status**: Implementation complete, needs testing
+**Status**: Implementation complete, pending testing
 
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
@@ -151,8 +151,8 @@
 | Scenario | Before | After |
 |----------|--------|-------|
 | 1000 messages, 100 visible items | 10M operations | 100K operations |
-| Storage writes | 1000 writes | 200 writes |
-| DOM queries | 3000 queries | ~1000 queries |
+| Storage writes | 1000 writes | ~200 writes |
+| DOM queries | ~3000 queries | ~1000 queries |
 
 ---
 
@@ -172,11 +172,6 @@
 - **User Story 1 (P1)**: Can start after Foundational (Phase 2) - No dependencies on other stories
 - **User Story 2 (P2)**: Can start after Foundational (Phase 2) - No dependencies on other stories
 - **User Story 3 (P3)**: Can start after Foundational (Phase 2) - No dependencies on other stories
-
-### Within Each User Story
-
-- Core implementation before integration
-- Story complete before moving to next priority
 
 ### Parallel Opportunities
 
@@ -267,13 +262,27 @@ With multiple developers:
 
 ## Commits
 
-| Task | Commit | Status |
-|------|---------|--------|
-| T008-T011 | `d6ce981` - Memory optimization | Done |
-| T012-T016 | `cd78f4e` - Algorithm O(n²) → O(n) | Done |
-| T019-T026 | `d6ce981` - Scroll logic rewrite | Done |
-| T029-T030 | `d6ce981` - Reload interval tuning | Done |
-| T017-T018 | Performance test | Pending |
-| T027-T028 | Scroll behavior test | Pending |
-| T031 | Reload verification | Pending |
-| T034-T038 | E2E & integration tests | Pending |
+| Task Range | Commit | Description |
+|-----------|--------|-------------|
+| T008-T011 | `d6ce981` | Memory optimization (remove queue) |
+| T012-T016 | `cd78f4e` | Algorithm O(n²) → O(n) optimization |
+| T019-T026 | `d6ce981` | Scroll logic rewrite |
+| T029-T030 | `d6ce981` | Reload interval tuning (10 → 40) |
+| T032-T033 | `e86dd26` | Documentation updates |
+| T017-T018 | - | Performance test pending |
+| T027-T028 | - | Scroll behavior test pending |
+| T031 | - | Reload verification pending |
+| T034-T038 | - | E2E & integration tests pending |
+
+---
+
+## Summary
+
+| Metric | Value |
+|--------|-------|
+| **Total Tasks** | 38 |
+| **Completed** | 26 |
+| **Pending Testing** | 12 |
+| **Implementation** | 100% |
+
+**All implementation tasks are complete.** Remaining tasks are manual testing on Tinder web client.
