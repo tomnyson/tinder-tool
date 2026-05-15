@@ -464,6 +464,7 @@ if (window.__tinderAutoToolLoaded) {
   let msgMinDelay = 3000;
   let msgMaxDelay = 5000;
   let processedHrefs = [];
+  let processedHrefsSet = new Set(); // O(1) lookup thay vì O(n)
   const MESSAGE_PAGE_RELOAD_INTERVAL = 40;
 
   // ========== STORAGE HELPER ==========
@@ -544,22 +545,31 @@ if (window.__tinderAutoToolLoaded) {
     return null;
   }
 
+  // Cache selector result để tránh 3 DOM queries mỗi lần
+  let _cachedMessageItems = null;
+  let _lastMessageItemsQuery = 0;
+
   // Lấy danh sách message items từ sidebar
   function getMessageItems() {
-    // Thử nhiều selector khác nhau
-    let items = document.querySelectorAll(
-      ".messageList ul li > a.messageListItem",
-    );
+    const now = Date.now();
+    // Cache trong 500ms để tránh query quá nhiều
+    if (_cachedMessageItems && now - _lastMessageItemsQuery < 500) {
+      return _cachedMessageItems;
+    }
+
+    // Thử nhiều selector khác nhau - dùng fallback pattern
+    let items = document.querySelectorAll(".messageList ul li > a.messageListItem");
     if (items.length === 0) {
-      items = document.querySelectorAll(
-        'ul[aria-label="Your recent messages"] li > a',
-      );
+      items = document.querySelectorAll('ul[aria-label="Your recent messages"] li > a');
     }
     if (items.length === 0) {
       items = document.querySelectorAll("a.messageListItem");
     }
+    
+    _cachedMessageItems = Array.from(items);
+    _lastMessageItemsQuery = now;
     console.log(`📋 Tìm thấy ${items.length} items trong sidebar`);
-    return Array.from(items);
+    return _cachedMessageItems;
   }
 
   // Lấy container scroll của message list
@@ -671,7 +681,18 @@ if (window.__tinderAutoToolLoaded) {
     );
   }
 
+  // Debounce persist để tránh gọi storage quá nhiều lần
+  let _persistTimeout = null;
+  let _lastPersistTime = 0;
+
   async function persistBulkMessageState(extra = {}) {
+    // Throttle: chỉ persist mỗi 5 giây hoặc khi có thay đổi quan trọng
+    const now = Date.now();
+    if (now - _lastPersistTime < 5000 && Object.keys(extra).length === 0) {
+      return; // Bỏ qua nếu chưa đủ 5s và không có thay đổi quan trọng
+    }
+    _lastPersistTime = now;
+
     const result = await StorageHelper.get(["bulkMsgState"]);
     if (!result.bulkMsgState || !result.bulkMsgState.isRunning) return;
 
@@ -715,8 +736,9 @@ if (window.__tinderAutoToolLoaded) {
     for (let attempt = 0; attempt < 200; attempt++) {
       const items = getMessageItems();
       
+      // O(1) lookup với Set thay vì O(n) với Array.includes()
       for (const item of items) {
-        if (item && item.href && !processedHrefs.includes(item.href)) {
+        if (item && item.href && !processedHrefsSet.has(item.href)) {
           return item;
         }
       }
@@ -731,6 +753,8 @@ if (window.__tinderAutoToolLoaded) {
         top: Math.max(container.clientHeight * 0.9, 800),
         behavior: "auto",
       });
+      // Invalidate cache sau khi scroll để items mới được load
+      _cachedMessageItems = null;
       await new Promise((resolve) => setTimeout(resolve, 900));
 
       if (
@@ -805,6 +829,7 @@ if (window.__tinderAutoToolLoaded) {
     totalMessages = count > 0 ? count : 9999;
     currentMessageIndex = 0;
     processedHrefs = [];
+    processedHrefsSet = new Set(); // Reset Set khi bắt đầu campaign mới
     isSendingMessages = true;
     await scrollMessageListToTop();
 
@@ -894,6 +919,7 @@ if (window.__tinderAutoToolLoaded) {
         if (!textarea) {
           console.log("❌ Không tìm thấy textarea, bỏ qua người này");
           processedHrefs.push(targetHref);
+          processedHrefsSet.add(targetHref);
           currentMessageIndex++;
           await persistBulkMessageState();
           chrome.runtime.sendMessage({ action: "updateProgress", current: currentMessageIndex, total: totalMessages });
@@ -905,6 +931,7 @@ if (window.__tinderAutoToolLoaded) {
         if (!currentMessage) {
           console.log("❌ Không lấy được tin nhắn từ resolver, bỏ qua người này");
           processedHrefs.push(targetHref);
+          processedHrefsSet.add(targetHref);
           currentMessageIndex++;
           await persistBulkMessageState();
           chrome.runtime.sendMessage({ action: "updateProgress", current: currentMessageIndex, total: totalMessages });
@@ -928,6 +955,7 @@ if (window.__tinderAutoToolLoaded) {
           }
 
           processedHrefs.push(targetHref);
+          processedHrefsSet.add(targetHref);
           currentMessageIndex++;
           await persistBulkMessageState();
           chrome.runtime.sendMessage({ action: "updateProgress", current: currentMessageIndex, total: totalMessages });
@@ -1004,6 +1032,7 @@ if (window.__tinderAutoToolLoaded) {
       msgMinDelay = state.msgMinDelay || 3000;
       msgMaxDelay = state.msgMaxDelay || 5000;
       processedHrefs = Array.isArray(state.processedHrefs) ? state.processedHrefs : [];
+      processedHrefsSet = new Set(processedHrefs); // Khôi phục Set từ Array
 
       console.log(`📋 Đã khôi phục: Mode AI=${state.aiMode}, index=${currentMessageIndex}, processed=${processedHrefs.length}`);
 
