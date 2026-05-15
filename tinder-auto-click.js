@@ -1016,15 +1016,30 @@ if (window.__tinderAutoToolLoaded) {
   }
 
   // ========== AUTO RESUME CHỐNG CRASH ==========
-  async function checkAndResumeSession() {
-    try {
-      // Defensive: ensure StorageHelper is available
-      if (typeof StorageHelper === 'undefined') {
-        console.warn('⚠️ StorageHelper not defined, retrying in 2s...');
-        setTimeout(checkAndResumeSession, 2000);
-        return;
-      }
+  let _resumeRetryCount = 0;
+  const MAX_RESUME_RETRIES = 10; // Max 20s retry (10 x 2s)
 
+  async function checkAndResumeSession() {
+    _resumeRetryCount++;
+
+    // Nếu đã retry quá nhiều lần, dừng lại
+    if (_resumeRetryCount > MAX_RESUME_RETRIES) {
+      console.warn('⚠️ Đã hết số lần retry khôi phục, bỏ qua auto-resume');
+      _resumeRetryCount = 0;
+      return;
+    }
+
+    // Retry nếu StorageHelper chưa sẵn sàng
+    if (typeof StorageHelper === 'undefined' || !StorageHelper.isValid?.()) {
+      console.warn(`⚠️ StorageHelper unavailable, retrying in 2s... (${_resumeRetryCount}/${MAX_RESUME_RETRIES})`);
+      setTimeout(checkAndResumeSession, 2000);
+      return;
+    }
+
+    // Đã có StorageHelper hợp lệ, reset retry count
+    _resumeRetryCount = 0;
+
+    try {
       const res = await StorageHelper.get(["bulkMsgState"]);
       const state = res.bulkMsgState;
 
