@@ -253,6 +253,36 @@
     }
     .footer-link:hover { color: var(--fire); }
 
+    /* ─── Language Switcher ──────────────────── */
+    .lang-switch {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+    .btn-lang {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      cursor: none;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .btn-lang:hover, .btn-lang.active {
+      color: var(--black);
+      background: var(--fire);
+      border-color: var(--fire);
+    }
+    .lang-content {
+      display: none;
+    }
+    .lang-content.active {
+      display: block;
+    }
+
     /* ─── Responsive ─────────────────────────── */
     @media (max-width: 768px) {
       nav { padding: 20px 24px; }
@@ -288,30 +318,102 @@
 
 <!-- Content -->
 <section class="content-section">
-  <h1>Chính Sách Bảo Mật</h1>
-  <span class="meta">CẬP NHẬT LẦN CUỐI: THÁNG 4, 2026</span>
-  
-  <h2>1. Thu thập thông tin</h2>
-  <p>Tinder matches ("Extension") được thiết kế với tiêu chí bảo mật và quyền riêng tư đặt lên hàng đầu. Chúng tôi <strong>không thu thập, không phân tích, không lưu trữ và không chia sẻ</strong> bất kỳ thông tin cá nhân hoặc dữ liệu Tinder nào của bạn.</p>
-  <ul>
-    <li>Mọi hoạt động tự động hóa và xử lý dữ liệu đều diễn ra trực tiếp trên trình duyệt Chrome của người dùng.</li>
-    <li>Dịch vụ hoàn toàn độc lập, không kết nối với bất kỳ máy chủ (server) bên thứ 3 nào để gửi dữ liệu người dùng.</li>
-    <li>Tin nhắn, quotes mẫu, cấu hình delay và số thống kê (history) hoàn toàn được lưu giữ an toàn bên trong <code>local storage</code> của trình duyệt.</li>
-  </ul>
+  <div class="lang-switch">
+    <button class="btn-lang active" id="btn-lang-en" onclick="switchLang('en')">English</button>
+    <button class="btn-lang" id="btn-lang-vi" onclick="switchLang('vi')">Tiếng Việt</button>
+  </div>
 
-  <h2>2. Cách dữ liệu được sử dụng</h2>
-  <p>Dữ liệu chỉ được lưu lại trong trình duyệt để các chức năng của Extension có thể hoạt động chính xác (ví dụ: gửi tin nhắn bulk đúng đối tượng, lưu lại quotes mẫu mà bạn đã thêm, tự động nhận diện buổi sáng/trưa/tối). <strong>Tất cả dữ liệu này nằm hoàn toàn trong tầm kiểm soát của bạn và không bao giờ rời khỏi thiết bị.</strong></p>
+  <!-- ENGLISH VERSION -->
+  <div id="lang-en" class="lang-content active">
+    <h1>Privacy Policy</h1>
+    <span class="meta">LAST UPDATED: MAY 20, 2026</span>
 
-  <h2>3. Quyền truy cập extension</h2>
-  <p>Để tự động thao tác click vào gamepad và điền nội dung tin nhắn, Extension yêu cầu quyền truy cập <code>Host Permission</code> vào trang web của Tinder (mặc định là <code>tinder.com</code>). Chúng tôi thực hiện nghiêm ngặt quy tắc không truy cập bất kì tab hoặc ứng dụng nào khác trên máy tính của bạn.</p>
+    <h2>1. Introduction</h2>
+    <p><strong>Tinder matches</strong> ("Extension") is committed to protecting your privacy. This Privacy Policy fully discloses how we collect, process, store, and share user data when you use our Extension. Our core philosophy is <strong>"Local-First"</strong> and <strong>"No-Tracking"</strong> to ensure your personal data remains strictly under your control.</p>
 
-  <h2>4. Thay đổi nội dung chính sách bảo mật</h2>
-  <p>Chúng tôi có thể cập nhật Chính Sách Bảo Mật theo định kỳ hoặc khi có thay đổi trong API mở rộng của trình duyệt. Mọi thay đổi đều được cập nhật ở trang này nhưng tiêu chí cốt lõi "Local-First" và "No-Tracking" sẽ luôn được giữ nguyên.</p>
+    <h2>2. Data Collection & Permissions</h2>
+    <p>The Extension requests and accesses only the minimum scope of permissions and data required to function. We declare the following practices:</p>
+    <ul>
+      <li><strong>Tinder Web Interface Data:</strong> To perform automated clicking and assist in generating replies, the Extension reads Tinder profile bios, images, and chat inputs directly on <code>tinder.com</code> while you are actively browsing.</li>
+      <li><strong>OpenRouter API Key:</strong> To generate AI replies, you must provide your own OpenRouter API key. This key is processed locally and stored securely in your browser.</li>
+      <li><strong>Extension Configuration:</strong> Custom message templates, target settings, delay configs, and bulk sending history logs are stored locally.</li>
+      <li><strong>Permissions Disclosures:</strong>
+        <ul>
+          <li><code>activeTab</code> & <code>scripting</code>: Used to run content scripts locally on the active Tinder tab.</li>
+          <li><code>storage</code>: Used to store configuration settings locally in your browser.</li>
+          <li>Host Permissions (<code>&lt;all_urls&gt;</code>): Used strictly to make direct API requests (fetch) from your browser to OpenRouter's servers.</li>
+        </ul>
+      </li>
+    </ul>
 
-  <h2>5. Liên hệ với chúng tôi</h2>
-  <p><a style="color: #F0F0F0; text-decoration: none;" href="mailto:tabletkindfire@gmail.com">tabletkindfire@gmail.com
+    <h2>3. Data Processing & Usage</h2>
+    <p>All data processing, automation timers, and click simulations run locally within your browser. Profile context data is compiled on your device and sent via HTTPS only when you actively trigger AI message generation.</p>
 
-  </a> Nếu bạn có bất cứ thắc mắc nào liên quan đến cách thức extension hoạt động hay có yêu cầu xoá dữ liệu thủ công (dù bạn có thể dễ dàng làm việc đó qua cài đặt trình duyệt), xin hãy tạo issue tại <strong>GitHub Repository</strong> của dự án.</p>
+    <h2>4. Data Storage & Retention</h2>
+    <ul>
+      <li><strong>Local Storage:</strong> Your API keys, custom message prompts, model choices, and logs are stored exclusively in your browser's local storage (<code>chrome.storage.local</code>).</li>
+      <li><strong>No Server Synced:</strong> We do not operate external databases, cloud synchronization servers, or tracking platforms. No data is stored on our end.</li>
+      <li><strong>Retention:</strong> Your data remains in your local browser until you delete it, clear the cache, or uninstall the Extension.</li>
+    </ul>
+
+    <h2>5. Data Sharing & Third Parties</h2>
+    <p>We do not sell, rent, trade, or share your data with advertising networks or third-party tracking services. The only data transmission occurs with the following service:</p>
+    <ul>
+      <li><strong>OpenRouter (https://openrouter.ai):</strong> When generating AI messages, your API key and Tinder profile text (context) are transmitted directly to OpenRouter via secure HTTPS connection to retrieve AI-generated responses. This data is handled according to OpenRouter's privacy policy. No other parties are involved.</li>
+    </ul>
+
+    <h2>6. User Control & Data Deletion</h2>
+    <p>You have full control over your data. You can delete your API key, custom templates, or history logs directly in the Extension popup panel. Uninstalling the Extension instantly purges all related storage data from your device.</p>
+
+    <h2>7. Contact & Support</h2>
+    <p>If you have questions regarding this policy or the Extension's data practices, please contact us at <a style="color: #F0F0F0; text-decoration: underline;" href="mailto:tabletkindfire@gmail.com">tabletkindfire@gmail.com</a> or open an issue on our GitHub Repository.</p>
+  </div>
+
+  <!-- VIETNAMESE VERSION -->
+  <div id="lang-vi" class="lang-content">
+    <h1>Chính Sách Bảo Mật</h1>
+    <span class="meta">CẬP NHẬT LẦN CUỐI: NGÀY 20 THÁNG 5, 2026</span>
+
+    <h2>1. Giới thiệu</h2>
+    <p><strong>Tinder matches</strong> ("Extension") cam kết bảo vệ quyền riêng tư của bạn. Chính sách bảo mật này công bố chi tiết cách chúng tôi thu thập, xử lý, lưu trữ và chia sẻ dữ liệu người dùng khi bạn sử dụng Extension. Triết lý cốt lõi của chúng tôi là <strong>"Local-First" (Ưu tiên cục bộ)</strong> và <strong>"No-Tracking" (Không theo dõi)</strong> để đảm bảo dữ liệu cá nhân hoàn toàn nằm trong tầm kiểm soát của bạn.</p>
+
+    <h2>2. Thu thập dữ liệu & Quyền truy cập</h2>
+    <p>Extension chỉ yêu cầu và truy cập phạm vi dữ liệu tối thiểu cần thiết để hoạt động. Chúng tôi công bố chi tiết như sau:</p>
+    <ul>
+      <li><strong>Dữ liệu giao diện Web Tinder:</strong> Để thực hiện thao tác click tự động và tạo câu trả lời gợi ý, Extension đọc nội dung mô tả hồ sơ (bio), hình ảnh và khung chat trực tiếp trên trang <code>tinder.com</code> khi bạn đang duyệt web.</li>
+      <li><strong>Khóa OpenRouter API:</strong> Để tạo tin nhắn bằng AI, bạn cần cung cấp khóa OpenRouter API cá nhân. Khóa này được xử lý cục bộ và lưu trữ bảo mật trong trình duyệt của bạn.</li>
+      <li><strong>Cấu hình Extension:</strong> Mẫu tin nhắn tùy chỉnh, thiết lập mục tiêu, cấu hình thời gian delay và nhật ký gửi tin nhắn hàng loạt đều được lưu trữ cục bộ.</li>
+      <li><strong>Công bố Quyền sử dụng (Permissions):</strong>
+        <ul>
+          <li><code>activeTab</code> & <code>scripting</code>: Được dùng để chạy content script cục bộ trên tab Tinder đang hoạt động.</li>
+          <li><code>storage</code>: Được dùng để lưu trữ cài đặt cấu hình trong trình duyệt của bạn.</li>
+          <li>Quyền máy chủ (<code>&lt;all_urls&gt;</code>): Được dùng riêng để gửi các yêu cầu API (fetch) trực tiếp từ trình duyệt của bạn tới máy chủ OpenRouter.</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h2>3. Xử lý & Sử dụng dữ liệu</h2>
+    <p>Mọi quá trình xử lý dữ liệu, bộ hẹn giờ tự động và giả lập click đều được thực hiện cục bộ trên trình duyệt của bạn. Dữ liệu ngữ cảnh hồ sơ chỉ được đóng gói và gửi qua kết nối HTTPS khi bạn chủ động kích hoạt chức năng tạo tin nhắn AI.</p>
+
+    <h2>4. Lưu trữ & Thời gian lưu trữ dữ liệu</h2>
+    <ul>
+      <li><strong>Lưu trữ Cục bộ:</strong> Khóa API, mẫu câu tùy chỉnh, lựa chọn mô hình AI và lịch sử gửi tin được lưu trữ độc quyền trong bộ nhớ cục bộ trình duyệt (<code>chrome.storage.local</code>).</li>
+      <li><strong>Không đồng bộ máy chủ:</strong> Chúng tôi không vận hành bất kỳ cơ sở dữ liệu bên ngoài, máy chủ đồng bộ đám mây hay nền tảng theo dõi nào. Chúng tôi không lưu giữ bất kỳ dữ liệu nào của bạn.</li>
+      <li><strong>Thời hạn:</strong> Dữ liệu tồn tại trong trình duyệt của bạn cho đến khi bạn chủ động xóa nó, dọn dẹp bộ nhớ cache trình duyệt hoặc gỡ cài đặt Extension.</li>
+    </ul>
+
+    <h2>5. Chia sẻ dữ liệu & Bên thứ ba</h2>
+    <p>Chúng tôi không bán, cho thuê, trao đổi hoặc chia sẻ dữ liệu của bạn với các mạng quảng cáo hoặc dịch vụ theo dõi của bên thứ ba. Hoạt động truyền dữ liệu duy nhất diễn ra với dịch vụ sau:</p>
+    <ul>
+      <li><strong>OpenRouter (https://openrouter.ai):</strong> Khi tạo tin nhắn AI, khóa API của bạn và văn bản hồ sơ Tinder (ngữ cảnh) sẽ được truyền trực tiếp đến OpenRouter qua kết nối HTTPS an toàn để nhận kết quả phản hồi. Dữ liệu này được xử lý theo chính sách quyền riêng tư của OpenRouter. Không có bên thứ ba nào khác được tiếp cận.</li>
+    </ul>
+
+    <h2>6. Quyền kiểm soát & Xóa dữ liệu</h2>
+    <p>Bạn có toàn quyền kiểm soát dữ liệu của mình. Bạn có thể xóa khóa API, các mẫu câu tùy chỉnh hoặc nhật ký lịch sử bất kỳ lúc nào trực tiếp trong bảng popup của Extension. Việc gỡ cài đặt Extension sẽ ngay lập tức xóa bỏ hoàn toàn tất cả dữ liệu lưu trữ liên quan khỏi thiết bị của bạn.</p>
+
+    <h2>7. Liên hệ & Hỗ trợ</h2>
+    <p>Nếu bạn có bất kỳ câu hỏi nào về chính sách này hoặc hoạt động xử lý dữ liệu của Extension, vui lòng liên hệ qua email <a style="color: #F0F0F0; text-decoration: underline;" href="mailto:tabletkindfire@gmail.com">tabletkindfire@gmail.com</a> hoặc gửi issue tại GitHub Repository của dự án.</p>
+  </div>
 </section>
 
 <!-- Footer -->
@@ -326,6 +428,20 @@
 </footer>
 
 <script>
+  // ─── Language Switcher ───────────────────────
+  function switchLang(lang) {
+    document.querySelectorAll('.lang-content').forEach(el => {
+      el.classList.remove('active');
+    });
+    document.querySelectorAll('.btn-lang').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    const content = document.getElementById(`lang-${lang}`);
+    const btn = document.getElementById(`btn-lang-${lang}`);
+    if (content) content.classList.add('active');
+    if (btn) btn.classList.add('active');
+  }
+
   // ─── Custom Cursor ───────────────────────────
   const cursor = document.getElementById('cursor');
   const ring = document.getElementById('cursorRing');
